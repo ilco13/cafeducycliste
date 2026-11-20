@@ -43,9 +43,11 @@ En 2026, la gamme passe à des **embouts et talons blancs**, et les modèles Air
 | **Ultimate Glide (Pro)** | Double BOA Li2, 190 g (T43), blanc et argent | Race, Classic |
 | **Feat** | Le plus léger de la gamme, réglable en roulant | Race en montagne, Audax |
 | **Air** | Fabriquée à la main en Italie, très ventilée | Classic, Audax en été |
-| *Gravel* | NIMBL est surtout « route » : vérifier s'il existe un modèle SPD, sinon utiliser les **Outlands Shoes Café du Cycliste** | Outlands |
+| **Urano** | Chaussure gravel NIMBL (semelle carbone monocoque), 599 € | Outlands |
 
 ---
+
+> ✅ **Planches flat-lay générées** : voir `flatlay/out/` (12 PNG en 1080 × 1350 et `planche-contact.jpg`), produites par `scripts/flatlay.py` à partir de `flatlay/tenues.json`. Écarts par rapport au tableau de la phase 4 : la Feat n'est plus vendue sur nimbl.cc, elle est remplacée par l'Air Pro ou la Glide Pro ; en gravel, j'ai mis l'Urano NIMBL.
 
 ## Phase 2 : règles d'association (≈ 0,5 jour)
 

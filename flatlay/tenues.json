@@ -1,0 +1,256 @@
+[
+ {
+  "id": "01-fournaise",
+  "nom": "Fournaise",
+  "temp": "> 25 °C",
+  "haut": [
+   "men-cycling-jersey-laurette-jadeite"
+  ],
+  "bas": "men-cycling-bibshort-marinette4-storm",
+  "gants": "unisex-cycling-summer-mitts2-white",
+  "casque": [
+   "S-Works Prevail 3",
+   "Blanc",
+   "60923-106_HLMT_SW-PREVAIL-3-HLMT-CE-WHT-M_HERO-SQUARE"
+  ],
+  "chaussures": [
+   "Ultimate Glide Pro Edition",
+   "Ultimate-Glide-Pro-Edition-1.webp",
+   651
+  ],
+  "gamme": "Classic"
+ },
+ {
+  "id": "02-heritage-riviera",
+  "nom": "Héritage Riviera",
+  "temp": "> 25 °C",
+  "haut": [
+   "men-cycling-jersey-fleurette2-deep-water"
+  ],
+  "bas": "men-cycling-bibshort-victoire-navy",
+  "gants": "unisex-cycling-summer-mitts2-black",
+  "casque": [
+   "Propero 4",
+   "Blanc",
+   "60124-171_HLMT_PROPERO-4-HLMT-CE-WHT-M_HERO-SQUARE"
+  ],
+  "chaussures": [
+   "Ultimate Air Pro Edition",
+   "Nimbl-Ultimate-Air-Pro-Edition-1.webp",
+   581
+  ],
+  "gamme": "Classic · Race"
+ },
+ {
+  "id": "03-race-factory",
+  "nom": "Race Factory",
+  "temp": "22–32 °C",
+  "haut": [
+   "men-cycling-jersey-bergida-cafe-factory"
+  ],
+  "bas": "men-cycling-bibshort-victoire-cafe-factory",
+  "gants": "unisex-cycling-summer-mitts2-black",
+  "casque": [
+   "S-Works Evade 4",
+   "Noir mat",
+   "60726-110_HLMT_SW-EVADE-4-HLMT-CE-MATTE-BLK_HERO-SQUARE"
+  ],
+  "chaussures": [
+   "Ultimate Exceed Pro Edition",
+   "Ultimate-Exceed-Pro-Edition-1.webp",
+   651
+  ],
+  "gamme": "Race"
+ },
+ {
+  "id": "04-audax-ete",
+  "nom": "Audax d'été",
+  "temp": "20–30 °C",
+  "haut": [
+   "men-cycling-jersey-mona2-mariniere"
+  ],
+  "bas": "men-cycling-bibshort-freida-navy",
+  "gants": "unisex-cycling-summer-mitts2-white",
+  "casque": [
+   "S-Works Prevail 3",
+   "Blanc / noir",
+   "60923-107_HLMT_SW-PREVAIL-3-HLMT-CE-WHT-BLK-M_HERO-SQUARE"
+  ],
+  "chaussures": [
+   "Ultimate Air Pro Edition",
+   "Nimbl-Ultimate-Air-Pro-Edition-1.webp",
+   581
+  ],
+  "gamme": "Audax"
+ },
+ {
+  "id": "05-minimaliste",
+  "nom": "Minimaliste",
+  "temp": "20–30 °C",
+  "haut": [
+   "men-cycling-jersey-olympe-cinder-red"
+  ],
+  "bas": "men-cycling-bibshort-victoire-black",
+  "gants": "unisex-cycling-summer-mitts2-black",
+  "casque": [
+   "S-Works Evade 4 LTD",
+   "Race Red",
+   "60726-150_HLMT_SW-EVADE-4-LTD-HLMT-CE-RACE-RED-VAPOR_HERO-SQUARE"
+  ],
+  "chaussures": [
+   "Ultimate Exceed Giro d'Italia LTD",
+   "NIMBL-Ultimate-Exceed-Giro-dItalia-Limited-Edition-1.webp",
+   null
+  ],
+  "gamme": "Race"
+ },
+ {
+  "id": "06-mi-saison-course",
+  "nom": "Mi-saison course",
+  "temp": "10–18 °C",
+  "haut": [
+   "men-cycling-jersey-constance-pearl-grey-deep-water"
+  ],
+  "bas": "men-cycling-bibshort-adrienne2-navy",
+  "gants": "unisex-cycling-gloves-lightweight2-grey",
+  "casque": [
+   "Propero 4",
+   "Hyper / Dove Grey",
+   "60124-173_HLMT_PROPERO-4-HLMT-CE-HYP-DOVGRY-M_HERO-SQUARE"
+  ],
+  "chaussures": [
+   "Ultimate Glide Pro Edition",
+   "Ultimate-Glide-Pro-Edition-1.webp",
+   651
+  ],
+  "gamme": "Race · Classic"
+ },
+ {
+  "id": "07-brevet-automne",
+  "nom": "Brevet d'automne",
+  "temp": "8–16 °C",
+  "haut": [
+   "laure-b-jls-laure-m-pudd",
+   "lina-b-gwi-lina-m-blck"
+  ],
+  "bas": "men-cycling-bibtight-rosie-navy",
+  "gants": "unisex-cycling-gloves-softshell-black",
+  "casque": [
+   "S-Works Prevail 3",
+   "Noir",
+   "60923-100_HLMT_SW-PREVAIL-3-HLMT-CE-BLK-M_HERO-SQUARE"
+  ],
+  "chaussures": [
+   "Ultimate Air Pro Edition",
+   "Nimbl-Ultimate-Air-Pro-Edition-1.webp",
+   581
+  ],
+  "gamme": "Audax"
+ },
+ {
+  "id": "08-hiver-archive",
+  "nom": "Hiver archive",
+  "temp": "4–12 °C",
+  "haut": [
+   "men-cycling-jersey-ingrid2-verbena"
+  ],
+  "bas": "men-cycling-bibtight-marie2-black",
+  "gants": "unisex-cycling-gloves-classic-blue",
+  "casque": [
+   "Propero 4",
+   "Noir",
+   "60124-170_HLMT_PROPERO-4-HLMT-CE-BLK-M_HERO-SQUARE"
+  ],
+  "chaussures": [
+   "Ultimate Glide Pro Edition",
+   "Ultimate-Glide-Pro-Edition-1.webp",
+   651
+  ],
+  "gamme": "Audax · Classic"
+ },
+ {
+  "id": "09-grand-froid",
+  "nom": "Grand froid",
+  "temp": "0–5 °C",
+  "haut": [
+   "men-cycling-jersey-charlie-mariniere",
+   "albertine-b-jth-alber3-m-grli"
+  ],
+  "bas": "men-cycling-bibtight-elise2-black",
+  "gants": "unisex-cycling-gloves-winter-black",
+  "casque": [
+   "Propero 4",
+   "Blanc",
+   "60124-171_HLMT_PROPERO-4-HLMT-CE-WHT-M_HERO-SQUARE"
+  ],
+  "chaussures": [
+   "Ultimate Exceed Pro Edition",
+   "Ultimate-Exceed-Pro-Edition-1.webp",
+   651
+  ],
+  "gamme": "Classic"
+ },
+ {
+  "id": "10-gravel-automne",
+  "nom": "Gravel d'automne",
+  "temp": "4–12 °C",
+  "haut": [
+   "men-cycling-jersey-solange-carob-verbena"
+  ],
+  "bas": "men-cycling-short-eva2-golden-olive",
+  "gants": "unisex-cycling-gloves-gravel-mustard",
+  "casque": [
+   "Search",
+   "Noir",
+   "60124-160_HLMT_SEARCH-HLMT-CE-BLK_HERO-SQUARE"
+  ],
+  "chaussures": [
+   "Urano (gravel)",
+   "Nimbl-Urano-White-1.webp",
+   599
+  ],
+  "gamme": "Outlands"
+ },
+ {
+  "id": "11-gravel-ete",
+  "nom": "Gravel d'été",
+  "temp": "20–30 °C",
+  "haut": [
+   "unisex-cycling-jerseys-perrine-navy"
+  ],
+  "bas": "men-cycling-short-eva2-deep-water",
+  "gants": "unisex-cycling-summer-mitts2-black",
+  "casque": [
+   "Search",
+   "Blanc",
+   "60124-161_HLMT_SEARCH-HLMT-CE-WHT_HERO-SQUARE"
+  ],
+  "chaussures": [
+   "Urano (gravel)",
+   "Nimbl-Urano-White-1.webp",
+   599
+  ],
+  "gamme": "Outlands"
+ },
+ {
+  "id": "12-classique-merinos",
+  "nom": "Classique mérinos",
+  "temp": "16–24 °C",
+  "haut": [
+   "women-cycling-jersey-mireille-fog"
+  ],
+  "bas": "men-cycling-bibshort-mathilde-navy",
+  "gants": "unisex-cycling-summer-mitts2-white",
+  "casque": [
+   "S-Works Prevail 3",
+   "Blanc",
+   "60923-106_HLMT_SW-PREVAIL-3-HLMT-CE-WHT-M_HERO-SQUARE"
+  ],
+  "chaussures": [
+   "Ultimate Air Pro Edition",
+   "Nimbl-Ultimate-Air-Pro-Edition-1.webp",
+   581
+  ],
+  "gamme": "Classic · Audax"
+ }
+]
