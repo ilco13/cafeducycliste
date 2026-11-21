@@ -21,6 +21,12 @@
   --perm: #6b737c;
   --warn: #a4471d;
   --ok: #2f6b47;
+  --g-race: #c0392b;
+  --g-audax: #b7791f;
+  --g-classic: #2c5282;
+  --g-outlands: #3f7d4e;
+  --g-active: #6b46c1;
+  --g-explore: #6b7280;
   --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-data: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -30,12 +36,14 @@
     --bg: #15191e; --panel: #1d232a; --stage: #262c33; --stage-floor: #20262c; --fg: #e8ecf0; --muted: #9aa5b1;
     --line: #353e48; --accent: #8bb6e0; --accent-soft: #233446; --new: #e08a63; --old: #79a9d3; --perm: #9aa3ad;
     --warn: #e59a73; --ok: #7cc39a; color-scheme: dark;
+    --g-race: #ef7d6f; --g-audax: #e3b25a; --g-classic: #7fa8dc; --g-outlands: #7cc191; --g-active: #a990e8; --g-explore: #a3aab3;
   }
 }
 :root[data-theme="dark"] {
   --bg: #15191e; --panel: #1d232a; --stage: #262c33; --stage-floor: #20262c; --fg: #e8ecf0; --muted: #9aa5b1;
   --line: #353e48; --accent: #8bb6e0; --accent-soft: #233446; --new: #e08a63; --old: #79a9d3; --perm: #9aa3ad;
   --warn: #e59a73; --ok: #7cc39a; color-scheme: dark;
+  --g-race: #ef7d6f; --g-audax: #e3b25a; --g-classic: #7fa8dc; --g-outlands: #7cc191; --g-active: #a990e8; --g-explore: #a3aab3;
 }
 * { box-sizing: border-box; }
 body {
@@ -77,6 +85,10 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: 26px; letter
 .rack { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 14px; min-width: 0; }
 .label { font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 6px; }
 .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.gchip { padding: 3px 6px; opacity: .55; }
+.gchip .gm { margin-left: 0; }
+.chip.gchip[aria-pressed="true"] { opacity: 1; background: transparent; border-color: var(--fg); color: inherit; box-shadow: 0 0 0 1px var(--fg) inset; }
+.temp-tag { display: inline-block; font-family: var(--font-data); font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; margin-top: 2px; margin-right: 3px; white-space: nowrap; }
 button { font: inherit; color: inherit; cursor: pointer; }
 .chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 5px 11px; font-size: 13px; }
 .chip:hover { border-color: var(--accent); }
@@ -107,8 +119,19 @@ select { font: inherit; color: var(--fg); background: var(--bg); border: 1px sol
 .card .t { font-size: 12px; font-weight: 600; line-height: 1.25; }
 .card .m { font-size: 11px; color: var(--muted); line-height: 1.25; }
 .card .m .pill { margin-left: 0; margin-top: 2px; }
+.card .m .gm + .pill { margin-left: 0; }
+.gm { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 4px; padding: 1px 6px; margin-left: 6px; vertical-align: 1px; color: var(--gc); background: color-mix(in srgb, var(--gc) 14%, transparent); border: 1px solid color-mix(in srgb, var(--gc) 45%, transparent); }
+.gm::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--gc); }
+.card .gm { margin-left: 0; margin-top: 2px; margin-right: 3px; }
+.gm.race { --gc: var(--g-race); } .gm.audax { --gc: var(--g-audax); } .gm.classic { --gc: var(--g-classic); }
+.gm.outlands { --gc: var(--g-outlands); } .gm.active { --gc: var(--g-active); } .gm.explore { --gc: var(--g-explore); }
+.own { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: 1px; border: 1px solid var(--accent); color: var(--accent); }
+.own.wish { border-style: dashed; color: var(--muted); border-color: var(--muted); }
+.card .own { margin-left: 0; margin-top: 2px; }
+.outfit-note { background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+.outfit-note b { font-family: var(--font-display); }
 .none-card { place-items: center; color: var(--muted); font-size: 12px; min-height: 120px; }
-.empty { color: var(--muted); padding: 16px 4px; }
+.empty { color: var(--muted); padding: 16px 4px; grid-column: 1 / -1; }
 
 details.tune { border-top: 1px solid var(--line); padding-top: 10px; }
 details.tune summary { cursor: pointer; font-weight: 600; }
@@ -133,17 +156,26 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       <span class="stage-badge">Mannequin H · 180 cm</span>
       <canvas id="cv" width="600" height="960" role="img" aria-label="Mannequin habillé avec la tenue sélectionnée"></canvas>
     </div>
+    <div id="outfit-note" class="outfit-note" hidden></div>
     <div id="check" class="check ok" role="status"><span class="dot"></span><span id="check-text">Chargement…</span></div>
     <div class="legend" id="legend"></div>
   </section>
 
   <section class="rack" aria-label="Choix des pièces">
-    <div>
-      <p class="label">Tenues prêtes</p>
-      <div class="presets" id="presets"></div>
+    <div id="my-block" hidden>
+      <p class="label">Mes tenues · avec ma garde-robe et mes achats prévus</p>
+      <div class="presets" id="my-presets"></div>
     </div>
 
     <div class="filters">
+      <div id="wardrobe-filter" hidden style="grid-column: 1 / -1">
+        <p class="label"><label for="portant">Portant</label></p>
+        <select id="portant">
+          <option value="">Tout le catalogue</option>
+          <option value="own">Mes pièces</option>
+          <option value="own+wish">Mes pièces et mes achats prévus</option>
+        </select>
+      </div>
       <div>
         <p class="label"><label for="temp">Température de la sortie</label></p>
         <div class="temp-row">
@@ -153,14 +185,13 @@ details.tune summary { cursor: pointer; font-weight: 600; }
         <label class="toggle"><input type="checkbox" id="temp-filter" checked> Filtrer le portant sur cette température</label>
       </div>
       <div>
-        <p class="label"><label for="gamme">Gamme</label></p>
-        <select id="gamme">
-          <option value="">Toutes</option>
-          <option value="race">Race</option>
-          <option value="audax">Audax</option>
-          <option value="classic">Classic</option>
-          <option value="outlands">Outlands</option>
-        </select>
+        <p class="label" id="gamme-label">Gammes <span style="text-transform:none;letter-spacing:0">(plusieurs possibles)</span></p>
+        <div class="presets" id="gamme" role="group" aria-labelledby="gamme-label">
+          <button type="button" class="chip gchip" data-g="race" aria-pressed="false"><span class="gm race">Race</span></button>
+          <button type="button" class="chip gchip" data-g="audax" aria-pressed="false"><span class="gm audax">Audax</span></button>
+          <button type="button" class="chip gchip" data-g="classic" aria-pressed="false"><span class="gm classic">Classic</span></button>
+          <button type="button" class="chip gchip" data-g="outlands" aria-pressed="false"><span class="gm outlands">Outlands</span></button>
+        </div>
       </div>
       <div>
         <p class="label"><label for="saison">Collection</label></p>
@@ -221,6 +252,11 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   const tweaks = saved.tweaks || {};
 
   let DATA = null;
+  let WARD = { owned: [], wish: [], outfits: [] };
+  const ownSet = new Set(), wishSet = new Set();
+  const GAMME = { race: 'Race', audax: 'Audax', classic: 'Classic', outlands: 'Outlands', active: 'Active', explore: 'Explore' };
+  const gammeTag = (it) => (it.gamme || '').split('/').filter((g) => GAMME[g]).map((g) => `<span class="gm ${g}">${GAMME[g]}</span>`).join('');
+  const ownTag = (it) => ownSet.has(it.id) ? '<span class="own">À moi</span>' : wishSet.has(it.id) ? '<span class="own wish">À acheter</span>' : '';
   const byId = new Map();
   const imgs = new Map();
   const state = { outfit: {}, tab: 'haut', presetId: null };
@@ -398,12 +434,22 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     if (!mode || !it.seasonKind) return true;
     return mode === 'ancien' ? it.seasonKind === 'old' : it.seasonKind !== 'old';
   }
+  const gammes = () => [...document.querySelectorAll('#gamme [aria-pressed="true"]')].map((b) => b.dataset.g);
+  // vrai si aucune gamme n'est choisie, si la pièce n'a pas de gamme, ou si elle appartient à l'une des gammes choisies
+  const gammeOk = (it, gs) => !gs.length || !it.gamme || it.gamme.split('/').some((x) => gs.includes(x));
   function visible(slot) {
-    const T = tempNow(), filt = $('temp-filter').checked, g = $('gamme').value, sm = $('saison').value;
+    const T = tempNow(), filt = $('temp-filter').checked, g = gammes(), sm = $('saison').value;
     return DATA.items.filter((it) => it.slot === slot
-      && (!filt || it.tmin == null || (T >= it.tmin - 2 && T <= it.tmax + 2))
-      && (!g || !it.gamme || it.gamme.split('/').includes(g) || !['haut', 'couche', 'bas'].includes(slot))
-      && seasonOk(it, sm));
+      // un maillot se porte aussi plus froid sous une veste : marge plus large vers le bas
+      && (!filt || it.tmin == null || (T >= it.tmin - (slot === 'haut' ? 8 : 2) && T <= it.tmax + 2))
+      && (gammeOk(it, g) || !['haut', 'couche', 'bas'].includes(slot))
+      && seasonOk(it, sm)
+      && wardOk(it));
+  }
+  function wardOk(it) {
+    const m = $('portant').value;
+    if (!m || ['casque', 'chaussures'].includes(it.slot)) return true;
+    return ownSet.has(it.id) || (m === 'own+wish' && wishSet.has(it.id));
   }
   function coherence() {
     const parts = ['haut', 'bas', 'gants', 'couche'].map((s) => byId.get(state.outfit[s])).filter(Boolean);
@@ -412,7 +458,8 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     // La couche extérieure abaisse la plage du haut : on la combine au maillot.
     const top = byId.get(state.outfit.haut), layer = byId.get(state.outfit.couche);
     const ranges = [];
-    if (top && layer) ranges.push([Math.min(top.tmin, layer.tmin), Math.min(top.tmax, layer.tmax), `${top.model} + ${layer.model}`]);
+    // Une couche par-dessus réchauffe : la limite basse descend (≈3 °C pour un gilet, 5 °C pour une veste).
+    if (top && layer) ranges.push([Math.min(top.tmin, layer.tmin) - (layer.cat === 'gilet' ? 3 : 5), Math.min(top.tmax, layer.tmax), `${top.model} + ${layer.model}`]);
     else if (top) ranges.push([top.tmin, top.tmax, top.model]);
     else if (layer) ranges.push([layer.tmin, layer.tmax, layer.model]);
     for (const s of ['bas', 'gants']) { const it = byId.get(state.outfit[s]); if (it) ranges.push([it.tmin, it.tmax, it.model]); }
@@ -423,7 +470,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       return { ok: false, text: `Plages incompatibles : ${desc}` };
     }
     const inT = T >= lo - 2 && T <= hi + 2;
-    return { ok: inT, text: inT ? `Tenue cohérente de ${lo} à ${hi} °C (estimation)` : `Tenue prévue pour ${lo}–${hi} °C, pas pour ${T} °C` };
+    return { ok: inT, text: inT ? (lo === hi ? `Tenue cohérente à ${lo} °C (estimation)` : `Tenue cohérente de ${lo} à ${hi} °C (estimation)`) : `Tenue prévue pour ${lo}–${hi} °C, pas pour ${T} °C` };
   }
 
   // ---------- Interface
@@ -436,7 +483,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       if (!it) return s.optional ? '' : `<div class="legend-row"><span class="slot">${s.label}</span><span class="name" style="color:var(--muted)">—</span><span></span></div>`;
       if (it.brand === 'Café du Cycliste') total += it.price || 0;
       const extra = it.tmin != null ? ` <span style="color:var(--muted);font-family:var(--font-data);font-size:11px">${it.tmin}–${it.tmax} °C</span>` : (it.use ? ` <span style="color:var(--muted);font-size:12px">${it.use}</span>` : '');
-      return `<div class="legend-row"><span class="slot">${s.label}</span><span class="name">${itemTitle(it)}${it.colour ? ' — ' + it.colour : ''}${pill(it)}${extra}</span><span class="price">${fmtPrice(it.price)}</span></div>`;
+      return `<div class="legend-row"><span class="slot">${s.label}</span><span class="name">${itemTitle(it)}${it.colour ? ' — ' + it.colour : ''}${gammeTag(it)}${pill(it)}${ownTag(it)}${extra}</span><span class="price">${fmtPrice(it.price)}</span></div>`;
     }).join('');
     $('legend').innerHTML = rows + `<div class="legend-total"><span>Total textile Café du Cycliste</span><span>${Math.round(total)} €</span></div>`;
     const ch = coherence();
@@ -454,13 +501,16 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     html += list.map((it) => `<button type="button" class="card" data-id="${it.id}" aria-pressed="${it.id === cur}">
       <span class="ph"><img loading="lazy" src="${it.img}" alt=""></span>
       <span class="t">${itemTitle(it)}</span>
-      <span class="m">${it.colour || it.use || ''}${it.price ? ' · ' + fmtPrice(it.price) : ''}${it.season ? '<br>' + pill(it) : ''}</span>
+      <span class="m">${it.colour || it.use || ''}${it.price ? ' · ' + fmtPrice(it.price) : ''}${(gammeTag(it) || it.season || it.tmin != null) ? '<br>' + gammeTag(it) + (it.tmin != null ? `<span class="temp-tag">${it.tmin}–${it.tmax} °C</span>` : '') + pill(it) : ''}${ownTag(it) ? '<br>' + ownTag(it) : ''}</span>
     </button>`).join('');
     if (!list.length) html += `<p class="empty">Aucune pièce ne correspond à ces filtres. Élargissez la température ou la gamme.</p>`;
     $('grid').innerHTML = html;
   }
   function renderPresets() {
-    $('presets').innerHTML = DATA.presets.map((p) => `<button type="button" class="chip" data-preset="${p.id}" aria-pressed="${state.presetId === p.id}" title="${p.temp} · ${p.gamme}">${p.name}</button>`).join('');
+    $('my-presets').innerHTML = WARD.outfits.map((p) => `<button type="button" class="chip" data-my="${p.id}" aria-pressed="${state.presetId === p.id}" title="${p.temp}">${p.name} <span style="opacity:.7;font-family:var(--font-data);font-size:11px">${p.temp}</span></button>`).join('');
+    const o = WARD.outfits.find((p) => p.id === state.presetId);
+    $('outfit-note').hidden = !o;
+    if (o) $('outfit-note').innerHTML = `<b>${o.name}</b> · ${o.temp}<br>${o.note}`;
   }
   function syncTune() {
     const it = byId.get(state.outfit[state.tab]);
@@ -484,9 +534,9 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   }
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   function randomOutfit() {
-    const T = tempNow(), g = $('gamme').value, sm = $('saison').value, mix = $('mix').checked && !sm;
+    const T = tempNow(), g = gammes(), sm = $('saison').value, mix = $('mix').checked && !sm;
     const fits = (it) => T >= it.tmin - 1 && T <= it.tmax + 1;
-    const pool = (slot) => DATA.items.filter((it) => it.slot === slot && fits(it) && (!g || !it.gamme || it.gamme.split('/').includes(g) || slot === 'gants') && seasonOk(it, sm));
+    const pool = (slot) => DATA.items.filter((it) => it.slot === slot && fits(it) && (gammeOk(it, g) || slot === 'gants') && seasonOk(it, sm));
     for (let attempt = 0; attempt < 40; attempt++) {
       const o = {};
       let tops = pool('haut');
@@ -522,7 +572,13 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     $('grid').querySelectorAll('[data-id]').forEach((el) => el.setAttribute('aria-pressed', String(el === b)));
     renderPresets(); renderLegend(); syncTune(); render(); persist();
   });
-  $('presets').addEventListener('click', (e) => { const b = e.target.closest('[data-preset]'); if (b) applyPreset(DATA.presets.find((p) => p.id === b.dataset.preset)); });
+  $('my-presets').addEventListener('click', (e) => { const b = e.target.closest('[data-my]'); if (b) applyPreset(WARD.outfits.find((p) => p.id === b.dataset.my)); });
+  $('portant').addEventListener('change', () => { renderTabs(); renderGrid(); });
+  $('gamme').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-g]'); if (!b) return;
+    b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+    renderTabs(); renderGrid();
+  });
   $('temp').addEventListener('input', () => { updateTempLabel(); renderTabs(); renderGrid(); renderLegend(); persist(); });
   for (const id of ['temp-filter', 'gamme', 'saison']) $(id).addEventListener('change', () => { renderTabs(); renderGrid(); });
   $('random').addEventListener('click', () => { randomOutfit(); refresh(); });
@@ -543,8 +599,16 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   new ResizeObserver(() => render()).observe(cv);
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => render());
 
-  fetch('catalogue.json').then((r) => r.json()).then((d) => {
+  Promise.all([
+    fetch('catalogue.json').then((r) => r.json()),
+    fetch('garde-robe.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+  ]).then(([d, w]) => {
     DATA = d;
+    if (w) {
+      WARD = w;
+      w.owned.forEach((id) => ownSet.add(id)); w.wish.forEach((id) => wishSet.add(id));
+      $('my-block').hidden = false; $('wardrobe-filter').hidden = false;
+    }
     for (const it of d.items) byId.set(it.id, it);
     if (saved.temp != null) $('temp').value = saved.temp;
     updateTempLabel();
@@ -552,7 +616,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       for (const s of SLOTS) state.outfit[s.key] = saved.outfit[s.key] && byId.has(saved.outfit[s.key]) ? saved.outfit[s.key] : null;
       refresh();
     } else {
-      applyPreset(d.presets[1]);
+      applyPreset(WARD.outfits[0] || d.presets[1]);
     }
   }).catch(() => { $('check-text').textContent = 'Le catalogue n’a pas pu être chargé. Rechargez la page.'; $('check').className = 'check warn'; });
 })();

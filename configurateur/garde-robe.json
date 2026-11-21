@@ -1,0 +1,132 @@
+{
+ "owned": [
+  "men-cycling-bibshort-freida-navy",
+  "constance-black-avocado",
+  "constance-navy-scots-pine",
+  "men-cycling-jersey-roxane-khaki",
+  "men-cycling-jersey-andrea-horizon-grey",
+  "men-cycling-jersey-angeline2-dark-sea",
+  "men-cycling-jersey-laurette-jadeite",
+  "men-cycling-jacket-edith-mountain-fog",
+  "unisex-cycling-gloves-lightweight2-khaki",
+  "unisex-cycling-gloves-lightweight2-black",
+  "unisex-cycling-gloves-softshell-black",
+  "unisex-cycling-summer-mitts2-white"
+ ],
+ "wish": [
+  "men-cycling-bibtight-marie2-carob",
+  "men-cycling-bibshort-marinette4-anthracite",
+  "men-cycling-bibtight-elise2-black",
+  "men-cycling-bibshort-adrienne2-navy"
+ ],
+ "outfits": [
+  {
+   "id": "g1",
+   "name": "Jadeite",
+   "temp": "25–35 °C",
+   "haut": "men-cycling-jersey-laurette-jadeite",
+   "couche": null,
+   "bas": "men-cycling-bibshort-marinette4-anthracite",
+   "gants": "unisex-cycling-summer-mitts2-white",
+   "casque": "helmet-evade3-smoke",
+   "chaussures": "shoe-ultimate-exceed-pro-edition",
+   "note": "Le vert d'eau ressort mieux sur l'anthracite que sur le marine. Mitaines blanches pour la touche claire. Variante sans achat : Freida Navy."
+  },
+  {
+   "id": "g2",
+   "name": "Dark Sea",
+   "temp": "20–30 °C",
+   "haut": "men-cycling-jersey-angeline2-dark-sea",
+   "couche": null,
+   "bas": "men-cycling-bibshort-freida-navy",
+   "gants": "unisex-cycling-summer-mitts2-white",
+   "casque": "helmet-evade3-smoke",
+   "chaussures": "shoe-ultimate-exceed-pro-edition",
+   "note": "Ton sur ton bleu profond, le plus « race » de ta garde-robe. Fonctionne aussi avec Marinette Anthracite."
+  },
+  {
+   "id": "g3",
+   "name": "Gris sur gris",
+   "temp": "16–22 °C",
+   "haut": "men-cycling-jersey-andrea-horizon-grey",
+   "couche": null,
+   "bas": "men-cycling-bibshort-marinette4-anthracite",
+   "gants": "unisex-cycling-summer-mitts2-white",
+   "casque": "helmet-evade3-smoke",
+   "chaussures": "shoe-ultimate-exceed-pro-edition",
+   "note": "Camaïeu de gris avec le casque Smoke. Départ frais : Lightweight noirs et Edith Mountain Fog en poche."
+  },
+  {
+   "id": "g4",
+   "name": "Kaki",
+   "temp": "15–18 °C",
+   "haut": "men-cycling-jersey-roxane-khaki",
+   "couche": null,
+   "bas": "men-cycling-bibshort-freida-navy",
+   "gants": "unisex-cycling-gloves-lightweight2-khaki",
+   "casque": "helmet-evade3-smoke",
+   "chaussures": "shoe-ultimate-exceed-pro-edition",
+   "note": "Gants kaki assortis au maillot, cuissard marine pour la base. Au-dessus de 18 °C, prends les mitaines blanches ; sous 15 °C, passe à Adrienne Navy."
+  },
+  {
+   "id": "g5",
+   "name": "Mi-saison marine",
+   "temp": "10–15 °C",
+   "haut": "constance-navy-scots-pine",
+   "couche": null,
+   "bas": "men-cycling-bibshort-adrienne2-navy",
+   "gants": "unisex-cycling-gloves-lightweight2-black",
+   "casque": "helmet-evade3-smoke",
+   "chaussures": "shoe-ultimate-exceed-pro-edition",
+   "note": "Le marine des bandes répond au corsaire Adrienne. Edith en poche pour les descentes."
+  },
+  {
+   "id": "g6",
+   "name": "Avocado",
+   "temp": "10–15 °C",
+   "haut": "constance-black-avocado",
+   "couche": null,
+   "bas": "men-cycling-bibshort-adrienne2-navy",
+   "gants": "unisex-cycling-gloves-lightweight2-khaki",
+   "casque": "helmet-evade3-black",
+   "chaussures": "shoe-ultimate-exceed-pro-edition",
+   "note": "Gants kaki pour reprendre le vert avocat. Avec un bas noir ce serait encore plus net, mais tu n'en as pas en corsaire."
+  },
+  {
+   "id": "g7",
+   "name": "Terre",
+   "temp": "5–10 °C",
+   "haut": "constance-black-avocado",
+   "couche": "men-cycling-jacket-edith-mountain-fog",
+   "bas": "men-cycling-bibtight-marie2-carob",
+   "gants": "unisex-cycling-gloves-softshell-black",
+   "casque": "helmet-evade3-black",
+   "chaussures": "shoe-ultimate-exceed-pro-edition",
+   "note": "Sous-maillot Judith Deep Water dessous. Avocat, carob et gris brumeux : la palette la plus cohérente pour Marie Carob."
+  },
+  {
+   "id": "g8",
+   "name": "Marine et carob",
+   "temp": "5–10 °C",
+   "haut": "constance-navy-scots-pine",
+   "couche": "men-cycling-jacket-edith-mountain-fog",
+   "bas": "men-cycling-bibtight-marie2-carob",
+   "gants": "unisex-cycling-gloves-softshell-black",
+   "casque": "helmet-evade3-smoke",
+   "chaussures": "shoe-ultimate-exceed-pro-edition",
+   "note": "Sous-maillot Judith et Edith Mountain Fog. Le marine et le brun sont un classique, le vert Scots Pine fait le lien."
+  },
+  {
+   "id": "g9",
+   "name": "Hiver",
+   "temp": "3–6 °C",
+   "haut": "constance-navy-scots-pine",
+   "couche": "men-cycling-jacket-edith-mountain-fog",
+   "bas": "men-cycling-bibtight-elise2-black",
+   "gants": "unisex-cycling-gloves-softshell-black",
+   "casque": "helmet-evade3-black",
+   "chaussures": "shoe-ultimate-exceed-pro-edition",
+   "note": "Limite : Edith coupe le vent mais n'isole pas. Sous 3 °C il manque une veste isolante et des gants d'hiver."
+  }
+ ]
+}
