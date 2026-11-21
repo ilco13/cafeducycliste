@@ -707,7 +707,10 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     let best = null;
     for (let attempt = 0; attempt < 60; attempt++) {
       const o = {};
-      o.haut = choose('haut', (it) => fits(it) || (T < it.tmin && T >= it.tmin - 8 && it.cat === 'maillot_ml')) ;
+      // On évite de reprendre le maillot déjà affiché pour que chaque tirage change vraiment.
+      const prevTop = state.outfit.haut;
+      const topOk = (it) => fits(it) || (T < it.tmin && T >= it.tmin - 8 && it.cat === 'maillot_ml');
+      o.haut = choose('haut', (it) => topOk(it) && it.id !== prevTop) || choose('haut', topOk);
       if (o.haut && !gOk(o.haut)) { const alt = choose('haut', (it) => gOk(it) && (fits(it) || (T < it.tmin && T >= it.tmin - 8 && it.cat === 'maillot_ml'))); if (alt) o.haut = alt; }
       if (T < 14) o.sous = choose('sous', (it) => it.sleeves === 'long' && fits(it, 2));
       const needLayer = T < 10 || (T < 16 && Math.random() < 0.5);
@@ -722,7 +725,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
         : it.model !== 'Search' && (T >= 18 ? /Prevail/.test(it.model) : (T < 12 || /race/.test(gam)) ? /Evade/.test(it.model) : true));
       o.chaussures = choose('chaussures', (it) => T < 8 ? /Northwave/.test(it.brand) : (outl ? it.model === 'Urano' : it.model !== 'Urano' && !/Northwave/.test(it.brand)));
       const kinds = [o.haut, o.couche, o.bas].filter(Boolean).map((it) => it.seasonKind);
-      const mixed = kinds.includes('old') && kinds.some((k) => k !== 'old');
+      const mixed = true; // plus de contrainte ancien/nouveau : seuls température, gammes et garde-robe comptent
       const inGamme = [o.haut, o.bas].every((it) => !it || gOk(it));
       best = best || o;
       if (!(mixed && inGamme) && attempt < 59) { if (inGamme) best = o; continue; }
