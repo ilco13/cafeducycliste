@@ -284,7 +284,17 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   }
 
   // ---------- Dessin du mannequin
+  let armOverride = null; // {start:[[x,y],[x,y]]} : bras qui sortent des manches courtes
   function armPoints(side) {
+    if (armOverride) {
+      // Le bras part de l'ouverture de la manche courte et descend jusqu'au poignet (y ≈ 89 cm).
+      const st = armOverride[side < 0 ? 0 : 1];
+      const ang = 9 * Math.PI / 180, dx = Math.sin(ang) * side, dy = Math.cos(ang);
+      const L = Math.max(20, (89 - st[1]) / dy);
+      const wrist = [st[0] + dx * L, st[1] + dy * L];
+      const elbow = [st[0] + dx * L * 0.45, st[1] + dy * L * 0.45];
+      return { shoulder: st, elbow, wrist, hand: [wrist[0] + dx * M.hand * 0.5, wrist[1] + dy * M.hand * 0.5], dx, dy, ang, fromSleeve: true };
+    }
     const sx = side * M.shoulderX, sy = M.shoulderY + 2;
     const dx = Math.sin(M.armAngle) * side, dy = Math.cos(M.armAngle);
     const elbow = [sx + dx * M.upperArm, sy + dy * M.upperArm];
@@ -370,9 +380,9 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       const a = armPoints(s);
       if (!showArms) continue; // bras et mains couverts par les manches longues (les gants pendent des poignets)
       // Sous un haut, le bras part de sous la manche pour que l'épaule ne dépasse pas du vêtement.
-      const start = clothedTop ? [a.shoulder[0] + a.dx * 12, a.shoulder[1] + a.dy * 12] : a.shoulder;
-      limb(c, [start, a.elbow, a.wrist], [clothedTop ? 4.6 : 5.6, 4.0, 2.9]); c.fill(); c.stroke();
-      c.save(); c.translate(...a.hand); c.rotate(-s * M.armAngle);
+      const start = a.fromSleeve ? [a.shoulder[0] - s * 1.2, a.shoulder[1] - 2] : clothedTop ? [a.shoulder[0] + a.dx * 12, a.shoulder[1] + a.dy * 12] : a.shoulder;
+      limb(c, [start, a.elbow, a.wrist], [a.fromSleeve ? 4.4 : clothedTop ? 4.6 : 5.6, 3.8, 2.9]); c.fill(); c.stroke();
+      c.save(); c.translate(...a.hand); c.rotate(-s * (a.ang ?? M.armAngle));
       c.beginPath(); c.ellipse(0, 1.5, 3.6, 8.2, 0, 0, Math.PI * 2); c.fill(); c.stroke(); c.restore();
     }
     // Torse (inutile, et visible aux épaules, quand un haut le recouvre)
@@ -458,6 +468,12 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     const hidden = (slot) => (slot === 'couche' && $('hide-couche').checked) || (slot === 'jambieres' && $('hide-jambieres').checked);
     const topIt = byId.get(state.outfit.haut);
     const sousIt = byId.get(state.outfit.sous);
+    // Bras visibles sous des manches courtes : on les fait partir de l'ouverture des manches.
+    armOverride = null;
+    if (topIt && topIt.sleeveEnds && loaded.haut && loaded.haut[1] && !(state.outfit.couche && !hidden('couche') && byId.get(state.outfit.couche)?.cat !== 'gilet')) {
+      const g = placement(topIt, loaded.haut[1]);
+      armOverride = topIt.sleeveEnds.map(([fx, fy]) => [g.x + fx * g.w, g.y + fy * g.h]);
+    }
     const clothed = !!(topIt || (state.outfit.couche && !hidden('couche')) || sousIt);
     drawMannequin(c, !(state.outfit.couche && !hidden('couche')) && !(topIt && topIt.cat === 'maillot_ml') && !(sousIt && sousIt.sleeves === 'long'), clothed);
     for (const s of order) {
@@ -511,7 +527,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
         for (const side of [-1, 1]) {
           const a = armPoints(side);
           const anchor = cuffs ? cuffs[side < 0 ? 0 : 1] : a.wrist;
-          const tilt = cuffs ? 6 * Math.PI / 180 : M.armAngle;
+          const tilt = cuffs ? 6 * Math.PI / 180 : (a.ang ?? M.armAngle);
           c.save();
           // le haut du gant remonte d'1 cm sur la manche
           c.translate(anchor[0] + side * p.dx, anchor[1] - 1 + p.dy);

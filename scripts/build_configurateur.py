@@ -155,6 +155,36 @@ def cuff_points(path):
     return out
 
 
+def sleeve_ends(path):
+    """Ouverture des manches courtes, en fractions de l'image.
+
+    On suit le profil gauche (puis droit) du maillot : la manche est la partie qui dépasse
+    du buste ; son ouverture est la dernière ligne où elle dépasse encore.
+    """
+    import numpy as np
+    a = np.asarray(Image.open(path).convert('RGBA').split()[-1]) > 40
+    h, w = a.shape
+    res = []
+    for side in (0, 1):
+        rows = []
+        for y in range(h):
+            xs = np.where(a[y])[0]
+            rows.append(None if not len(xs) else (xs.min() if side == 0 else w - 1 - xs.max()))
+        lower = [r for r in rows[int(h * 0.7):] if r is not None]
+        if not lower:
+            return None
+        body = float(np.median(lower))
+        cand = [y for y in range(int(h * 0.75)) if rows[y] is not None and rows[y] < body - 0.035 * w]
+        if not cand:
+            return None
+        y = max(cand)
+        x = (rows[y] + body) / 2
+        if side == 1:
+            x = w - 1 - x
+        res.append([round(float(x) / w, 4), round(float(y) / h, 4)])
+    return res
+
+
 def save(im, name, force=False):
     path = os.path.join(ASSETS, name)
     if not force and os.path.exists(path):
@@ -264,6 +294,8 @@ def main():
     for it in items:
         if it.get('cat') in ('maillot_ml', 'veste', 'veste_pluie') or it.get('sleeves') == 'long':
             it['cuffs'] = cuff_points(os.path.join(OUT, it['img']))
+        elif it.get('cat') == 'maillot_mc':
+            it['sleeveEnds'] = sleeve_ends(os.path.join(OUT, it['img']))
 
     # Tenues prédéfinies (flatlay/tenues.json) traduites en identifiants du configurateur.
     ids = {i['id'] for i in items}
