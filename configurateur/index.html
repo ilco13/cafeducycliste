@@ -689,6 +689,12 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       // Ordre de préférence : ma pièce qui convient ; ma pièce à la bonne température (hors gamme) ;
       // une pièce du catalogue qui convient ; ma pièce approchante. Casque et chaussures n'ont pas de plage.
       const wear = !['casque', 'chaussures'].includes(slot);
+      // Casque et chaussures : avec « ma garde-robe », uniquement mes paires / mon casque, jamais le catalogue.
+      if (!wear && own && all.some(mine)) {
+        const minePool = all.filter(mine);
+        const ok = minePool.filter(test);
+        return pick(ok.length ? ok : minePool);
+      }
       const tries = [(it) => mine(it) && test(it)];
       if (wear) tries.push((it) => mine(it) && fits(it));
       tries.push((it) => test(it));
@@ -711,7 +717,9 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       o.chaussettes = choose('chaussettes', (it) => fits(it, 2));
       const gam = [o.haut, o.bas].filter(Boolean).map((it) => it.gamme || '').join(' ');
       const outl = /outlands/.test(gam);
-      o.casque = choose('casque', (it) => (outl ? it.model === 'Search' : it.model !== 'Search'));
+      // Casque : Search en gravel ; ventilé (Prevail) quand il fait chaud ; aéro et plus chaud (Evade) quand il fait frais ou en Race.
+      o.casque = choose('casque', (it) => outl ? it.model === 'Search'
+        : it.model !== 'Search' && (T >= 18 ? /Prevail/.test(it.model) : (T < 12 || /race/.test(gam)) ? /Evade/.test(it.model) : true));
       o.chaussures = choose('chaussures', (it) => T < 8 ? /Northwave/.test(it.brand) : (outl ? it.model === 'Urano' : it.model !== 'Urano' && !/Northwave/.test(it.brand)));
       const kinds = [o.haut, o.couche, o.bas].filter(Boolean).map((it) => it.seasonKind);
       const mixed = kinds.includes('old') && kinds.some((k) => k !== 'old');

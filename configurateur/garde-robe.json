@@ -30,7 +30,9 @@
   "men-cycling-bibshort-adrienne2-navy",
   "men-cycling-jersey-fleurette2-oyster-grey",
   "men-cycling-baselayer-coline-sleeveless-puddle",
-  "shoe-northwave-extreme-r-gtx"
+  "shoe-northwave-extreme-r-gtx",
+  "shoe-ultimate-exceed-pro-edition",
+  "helmet-evade3-smoke"
  ],
  "wish": [],
  "outfits": [
@@ -189,7 +191,7 @@
    "jambieres": null,
    "gants": "unisex-cycling-gloves-lightweight2-black",
    "chaussettes": "unisex-cycling-socks-primaloft-black",
-   "casque": "helmet-60923-106",
+   "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Judith + Edith. Sur-gants coupe-vent sous 10 °C.",
    "surgants": true
@@ -205,7 +207,7 @@
    "jambieres": null,
    "gants": "unisex-cycling-gloves-lightweight2-black",
    "chaussettes": "unisex-cycling-socks-primaloft-black",
-   "casque": "helmet-60923-106",
+   "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Lydia + col roulé Carmen, sans veste ; Edith en poche. Sur-gants par-dessus les Lightweight.",
    "surgants": true
@@ -221,7 +223,7 @@
    "jambieres": null,
    "gants": "unisex-cycling-gloves-lightweight2-khaki",
    "chaussettes": "unisex-cycling-socks-primaloft-black",
-   "casque": "helmet-60923-106",
+   "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Avocat, carob, kaki et Edith Mountain Fog. Sur-gants sous 8 °C.",
    "surgants": true
@@ -237,7 +239,7 @@
    "jambieres": null,
    "gants": "unisex-cycling-gloves-softshell-black",
    "chaussettes": "unisex-cycling-socks-primaloft-black",
-   "casque": "helmet-60923-106",
+   "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Le plus chaud : Carmen, Manon, Elise, Softshell. Sous 2 °C, manchons de guidon.",
    "surgants": false
@@ -253,7 +255,7 @@
    "jambieres": null,
    "gants": "unisex-cycling-gloves-lightweight2-khaki",
    "chaussettes": "unisex-cycling-socks-primaloft-black",
-   "casque": "helmet-60923-106",
+   "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Manon Oyster et Marie Carob : palette taupe-brun-olive. Sur-gants par-dessus les kaki.",
    "surgants": true
@@ -269,7 +271,7 @@
    "jambieres": null,
    "gants": "unisex-cycling-gloves-lightweight2-black",
    "chaussettes": "unisex-cycling-socks-primaloft-black",
-   "casque": "helmet-60923-106",
+   "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Manon portée directement sur Judith, sans maillot : deux couches seulement. Sur-gants si besoin.",
    "surgants": true
@@ -285,7 +287,7 @@
    "jambieres": null,
    "gants": "unisex-cycling-gloves-lightweight2-black",
    "chaussettes": "unisex-cycling-socks-primaloft-black",
-   "casque": "helmet-60923-106",
+   "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Le jaune ressort sur le marine et le noir. L'Endura déperlant pour la pluie.",
    "surgants": true
@@ -301,7 +303,7 @@
    "jambieres": null,
    "gants": "unisex-cycling-gloves-lightweight2-khaki",
    "chaussettes": "cycling-socks-aero-black-white",
-   "casque": "helmet-60923-106",
+   "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Jaune, kaki et marine : palette « workwear ». Suzette repart dans la poche après l'averse.",
    "surgants": false
@@ -317,7 +319,7 @@
    "jambieres": null,
    "gants": "unisex-cycling-summer-mitts2-white",
    "chaussettes": "unisex-socks-summer-motto-white-black",
-   "casque": "helmet-60923-106",
+   "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Averse d'été : Suzette par-dessus Fleurette, puis dans la poche.",
    "surgants": false
