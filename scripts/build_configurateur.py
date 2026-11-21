@@ -77,7 +77,26 @@ def bottom_kind(r):
     return 'court'
 
 
-def save(im, name):
+def trim_helmet_shadow(im):
+    """Coupe l'ombre portée sous le casque : coque large, sangles étroites, puis ombre de nouveau large."""
+    import numpy as np
+    a = np.asarray(im.split()[-1]) > 0
+    w = a.sum(1)
+    m = w.max()
+    narrow = False
+    for y in range(len(w) // 2, len(w)):
+        if w[y] < 0.3 * m:
+            narrow = True
+        elif narrow and w[y] > 0.45 * m:
+            return im.crop((0, 0, im.width, y))
+    return im
+
+
+def save(im, name, force=False):
+    path = os.path.join(ASSETS, name)
+    if not force and os.path.exists(path):
+        with Image.open(path) as cur:
+            return cur.size
     im = im.copy()
     if im.height > MAX_H:
         im = im.resize((round(im.width * MAX_H / im.height), MAX_H), Image.LANCZOS)
@@ -127,7 +146,7 @@ def main():
         im = cutout(fetch(f'https://resources.specialized.com/image/{ref}?w=1000&h=1000&q=85', ref + '.png'),
                     remove_bg=True, hard=True)
         name = 'helmet-' + ref.split('_')[0] + '.webp'
-        w, h = save(im, name)
+        w, h = save(trim_helmet_shadow(im), name, force=True)
         items.append({'id': 'helmet-' + ref.split('_')[0], 'slot': 'casque', 'brand': 'Specialized', 'model': model,
                       'colour': colour, 'price': None, 'use': use, 'img': 'assets/' + name, 'w': w, 'h': h,
                       'url': 'https://www.specialized.com/fr/fr/'})

@@ -91,11 +91,34 @@ def season_label(row, family_archive):
 
 
 def colour_name(handle):
-    c = handle.split('-')[-1]
+    parts = handle.split('-')
+    # Ancien format : <genre>-<usage>-<catégorie>-<modèle>-<coloris en plusieurs mots>
+    if parts[0] in ('men', 'women', 'unisex') and len(parts) > 4:
+        words = parts[4:]
+        if words[0] in ('mvc', 'stars', 'calobra') and len(words) > 1:
+            words = words[1:]
+        if words == ['cafe', 'factory']:
+            return 'Café Factory'
+        if words == ['the', 'grip']:
+            return 'The Grip'
+        if words == ['mariniere']:
+            return 'Marinière'
+        return ' '.join(w.capitalize() for w in words).replace('Athracite', 'Anthracite').replace('Mountainfog', 'Mountain Fog').replace('Scotspine', 'Scots Pine')
+    c = parts[-1]
     names = {'pudd': 'Puddle', 'blck': 'Black', 'grli': 'Grey Lilac', 'storm': 'Storm', 'water': 'Deep Water',
              'factory': 'Café Factory', 'red': 'Cinder Red', 'mariniere': 'Marinière', 'verbena': 'Verbena',
-             'olive': 'Golden Olive', 'mustard': 'Mustard', 'fog': 'Fog'}
-    return names.get(c, c.capitalize())
+             'olive': 'Golden Olive', 'mustard': 'Mustard', 'fog': 'Fog', 'athracite': 'Anthracite',
+             'mountainfog': 'Mountain Fog', 'scotspine': 'Scots Pine', 'brea': 'Café × Pain',
+             'grip': 'The Grip', 'nvbl': 'Navy / Black', 'vrbn': 'Verbena'}
+    if c in names:
+        return names[c]
+    if re.fullmatch(r'cd[a-z]{2}', c):
+        return f'Custom Dye (réf. {c.upper()})'
+    if re.fullmatch(r'ar[a-z]{2}', c):
+        return f'Art, édition limitée (réf. {c.upper()})'
+    if re.fullmatch(r'[a-z]{4}', c) and c not in ('blue', 'pink', 'clay', 'moss', 'sand', 'word', 'grey', 'navy', 'rose', 'sage', 'teal', 'gold', 'mint', 'plum', 'lime', 'jade'):
+        return f'Réf. coloris {c.upper()}'
+    return c.capitalize()
 
 
 def draw_tag(d, x, y, text, kind):
