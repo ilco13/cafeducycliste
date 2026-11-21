@@ -577,12 +577,12 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   function topRange(sous, top, layer) {
     const parts = [sous, top, layer].filter(Boolean);
     if (!parts.length) return null;
-    let lo;
-    if (layer) lo = layer.tmin - (top ? jerseyWarmth(top) : 0) - baseWarmth(sous);
-    else if (top) lo = top.tmin - baseWarmth(sous);
-    else lo = sous.tmin;
-    const hi = Math.min(...parts.map((p) => p.tmax));
-    return [Math.round(lo), hi, parts.map((p) => p.model).join(' + ')];
+    // Chaque couche ajoutée décale TOUTE la plage vers le froid (limite basse ET limite haute).
+    const main = layer || top || sous;
+    const bonus = (layer ? (top ? jerseyWarmth(top) : 0) : 0) + (main !== sous ? baseWarmth(sous) : 0);
+    const lo = main.tmin - bonus;
+    const hi = Math.max(lo + 2, main.tmax - bonus);
+    return [Math.round(lo), Math.round(hi), parts.map((p) => p.model).join(' + ')];
   }
   function coherence() {
     const parts = ['haut', 'bas', 'gants', 'couche'].map((s) => byId.get(state.outfit[s])).filter(Boolean);
@@ -712,12 +712,18 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       const topOk = (it) => fits(it) || (T < it.tmin && T >= it.tmin - 8 && it.cat === 'maillot_ml');
       o.haut = choose('haut', (it) => topOk(it) && it.id !== prevTop) || choose('haut', topOk);
       if (o.haut && !gOk(o.haut)) { const alt = choose('haut', (it) => gOk(it) && (fits(it) || (T < it.tmin && T >= it.tmin - 8 && it.cat === 'maillot_ml'))); if (alt) o.haut = alt; }
-      if (T < 14) o.sous = choose('sous', (it) => it.sleeves === 'long' && fits(it, 2));
-      const needLayer = T < 10 || (T < 16 && Math.random() < 0.5);
-      if (needLayer) o.couche = choose('couche', (it) => gOk(it) && fits(it, 2));
+      // Sous-maillot et veste seulement si besoin, puis on vérifie que l'ensemble du haut n'est ni trop léger ni trop chaud.
+      if (T < 14 && Math.random() < 0.7) o.sous = choose('sous', (it) => fits(it, 4));
+      if (T < 10 || (T < 16 && Math.random() < 0.4)) o.couche = choose('couche', (it) => gOk(it) && fits(it, 2));
+      const tr = topRange(o.sous, o.haut, o.couche);
+      if (tr && (T < tr[0] - 1 || T > tr[1] + 1) && attempt < 59) continue;
       o.bas = choose('bas', (it) => gOk(it) && fits(it));
       o.gants = choose('gants', (it) => fits(it));
       o.chaussettes = choose('chaussettes', (it) => fits(it, 2));
+      // Vérification de la tenue entière : haut (couches additionnées), bas et mains doivent couvrir T.
+      const zones = [topRange(o.sous, o.haut, o.couche), o.bas && [o.bas.tmin, o.bas.tmax], o.gants && [o.gants.tmin, o.gants.tmax]].filter(Boolean);
+      const zlo = Math.max(...zones.map((z) => z[0])), zhi = Math.min(...zones.map((z) => z[1]));
+      if ((T < zlo - 1 || T > zhi + 1) && attempt < 59) continue;
       const gam = [o.haut, o.bas].filter(Boolean).map((it) => it.gamme || '').join(' ');
       const outl = /outlands/.test(gam);
       // Casque : Search en gravel ; ventilé (Prevail) quand il fait chaud ; aéro et plus chaud (Evade) quand il fait frais ou en Race.
