@@ -344,7 +344,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       c.restore();
     }
   }
-  function drawMannequin(c, showArms) {
+  function drawMannequin(c, showArms, clothedTop) {
     const skin = c.createLinearGradient(-30, 0, 30, 0);
     skin.addColorStop(0, '#e4e6ea'); skin.addColorStop(0.35, '#fbfbfc'); skin.addColorStop(0.65, '#ffffff'); skin.addColorStop(1, '#dfe2e6');
     c.fillStyle = skin; c.strokeStyle = 'rgba(40,50,60,0.18)'; c.lineWidth = 0.35;
@@ -368,11 +368,14 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     for (const s of [-1, 1]) {
       const a = armPoints(s);
       if (!showArms) continue; // bras et mains couverts par les manches longues (les gants pendent des poignets)
-      limb(c, [a.shoulder, a.elbow, a.wrist], [5.6, 4.0, 2.9]); c.fill(); c.stroke();
+      // Sous un haut, le bras part de sous la manche pour que l'épaule ne dépasse pas du vêtement.
+      const start = clothedTop ? [a.shoulder[0] + a.dx * 12, a.shoulder[1] + a.dy * 12] : a.shoulder;
+      limb(c, [start, a.elbow, a.wrist], [clothedTop ? 4.6 : 5.6, 4.0, 2.9]); c.fill(); c.stroke();
       c.save(); c.translate(...a.hand); c.rotate(-s * M.armAngle);
       c.beginPath(); c.ellipse(0, 1.5, 3.6, 8.2, 0, 0, Math.PI * 2); c.fill(); c.stroke(); c.restore();
     }
-    // Torse
+    // Torse (inutile, et visible aux épaules, quand un haut le recouvre)
+    if (!clothedTop) {
     c.beginPath();
     c.moveTo(-5.6, 24);
     c.bezierCurveTo(-9, 27.5, -17, 26.5, -21.5, 29.5);
@@ -386,6 +389,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     c.bezierCurveTo(23, 40, 25, 32, 21.5, 29.5);
     c.bezierCurveTo(17, 26.5, 9, 27.5, 5.6, 24);
     c.closePath(); c.fill(); c.stroke();
+    }
     // Cou et tête
     c.beginPath(); c.moveTo(-4.6, 19); c.lineTo(-5.4, 26); c.lineTo(5.4, 26); c.lineTo(4.6, 19); c.closePath(); c.fill(); c.stroke();
     c.beginPath(); c.ellipse(0, M.headCy, M.headRx, M.headRy, 0, 0, Math.PI * 2); c.fill(); c.stroke();
@@ -453,10 +457,17 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     const hidden = (slot) => (slot === 'couche' && $('hide-couche').checked) || (slot === 'jambieres' && $('hide-jambieres').checked);
     const topIt = byId.get(state.outfit.haut);
     const sousIt = byId.get(state.outfit.sous);
-    drawMannequin(c, !(state.outfit.couche && !hidden('couche')) && !(topIt && topIt.cat === 'maillot_ml') && !(sousIt && sousIt.sleeves === 'long'));
+    const clothed = !!(topIt || (state.outfit.couche && !hidden('couche')) || sousIt);
+    drawMannequin(c, !(state.outfit.couche && !hidden('couche')) && !(topIt && topIt.cat === 'maillot_ml') && !(sousIt && sousIt.sleeves === 'long'), clothed);
     for (const s of order) {
       const pair = loaded[s]; if (!pair || !pair[1] || hidden(s)) continue;
       const [it, im] = pair; const p = placement(it, im);
+      // Un sous-maillot ne doit pas déborder du maillot qui le couvre.
+      if (s === 'sous' && loaded.haut && loaded.haut[1]) {
+        const tp = placement(loaded.haut[0], loaded.haut[1]);
+        const nw = Math.min(p.w, tp.w * 0.88);
+        if (nw < p.w) { p.x += (p.w - nw) / 2; p.w = nw; }
+      }
       // Une veste par-dessus un maillot plus large est élargie (jusqu'à +20 %) pour le couvrir.
       if (s === 'couche' && loaded.haut && loaded.haut[1]) {
         const tp = placement(loaded.haut[0], loaded.haut[1]);
@@ -464,6 +475,17 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       }
       c.save();
       c.shadowColor = 'rgba(0,0,0,0.18)'; c.shadowBlur = 1.2 * k; c.shadowOffsetY = 0.4 * k;
+      if (it.slot === 'haut' && loaded.couche && loaded.couche[1] && !hidden('couche')) {
+        // Même principe pour un maillot sous une veste : seuls le col et le bas restent visibles.
+        const cp = placement(loaded.couche[0], loaded.couche[1]);
+        c.beginPath(); c.rect(-6.5, -10, 13, 200); c.rect(-60, cp.y + 9, 120, 200); c.clip();
+      }
+      if (it.slot === 'sous' && loaded.haut && loaded.haut[1]) {
+        // On ne garde que le col et ce qui est sous la ligne d'épaule du maillot :
+        // les épaules du sous-maillot ne débordent plus, les avant-bras restent visibles.
+        const tp = placement(loaded.haut[0], loaded.haut[1]);
+        c.beginPath(); c.rect(-6.5, -10, 13, 200); c.rect(-60, tp.y + 9, 120, 200); c.clip();
+      }
       if (it.slot === 'jambieres') { c.shadowColor = 'transparent'; drawLegWarmers(c, im, it); c.restore(); continue; }
       if (it.slot === 'chaussettes') { c.shadowColor = 'transparent'; drawSocks(c, im); c.restore(); continue; }
       if (it.slot === 'chaussures' && it.single) {
