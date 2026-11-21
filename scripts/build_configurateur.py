@@ -177,11 +177,15 @@ def sleeve_ends(path):
         cand = [y for y in range(int(h * 0.75)) if rows[y] is not None and rows[y] < body - 0.035 * w]
         if not cand:
             return None
-        y = max(cand)
-        x = (rows[y] + body) / 2
+        y_end = max(cand)
+        # Un peu au-dessus de l'ourlet de la manche : milieu entre le bord extérieur de la manche et le buste.
+        y = max(0, int(y_end - 0.035 * h))
+        x_out = rows[y] if rows[y] is not None else rows[y_end]
+        x = (x_out + body) / 2
+        half = (body - x_out) / 2
         if side == 1:
             x = w - 1 - x
-        res.append([round(float(x) / w, 4), round(float(y) / h, 4)])
+        res.append([round(float(x) / w, 4), round(float(y) / h, 4), round(float(half) / w, 4)])
     return res
 
 
