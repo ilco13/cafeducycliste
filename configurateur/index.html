@@ -160,6 +160,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     <div class="view-toggles" role="group" aria-label="Affichage">
       <label class="toggle"><input type="checkbox" id="hide-couche"> Masquer la veste / le gilet</label>
       <label class="toggle"><input type="checkbox" id="hide-jambieres"> Masquer les jambières</label>
+      <label class="toggle"><input type="checkbox" id="surgants"> Avec sur-gants coupe-vent</label>
     </div>
     <div id="outfit-note" class="outfit-note" hidden></div>
     <div id="check" class="check ok" role="status"><span class="dot"></span><span id="check-text">Chargement…</span></div>
@@ -168,7 +169,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
 
   <section class="rack" aria-label="Choix des pièces">
     <div id="my-block" hidden>
-      <p class="label">Mes tenues · avec ma garde-robe et mes achats prévus</p>
+      <p class="label">Mes tenues · 3 par plage de température</p>
       <div class="presets" id="my-presets"></div>
     </div>
 
@@ -475,10 +476,11 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       }
       c.save();
       c.shadowColor = 'rgba(0,0,0,0.18)'; c.shadowBlur = 1.2 * k; c.shadowOffsetY = 0.4 * k;
-      if (it.slot === 'haut' && loaded.couche && loaded.couche[1] && !hidden('couche') && loaded.couche[0].cat !== 'gilet') {
+      if ((it.slot === 'haut' || it.slot === 'sous') && loaded.couche && loaded.couche[1] && !hidden('couche') && loaded.couche[0].cat !== 'gilet') {
         // Même principe pour un maillot sous une veste : seuls le col et le bas restent visibles.
         const cp = placement(loaded.couche[0], loaded.couche[1]);
-        c.beginPath(); c.rect(-6.5, -10, 13, 200); c.rect(-60, cp.y + 9, 120, 200); c.clip();
+        // col + bas du maillot sous l'ourlet de la veste ; le reste (épaules, manches) est couvert
+        c.beginPath(); c.rect(-6.5, -10, 13, cp.y + 6); c.rect(-60, cp.y + cp.h - 4, 120, 200); c.clip();
       }
       if (it.slot === 'sous' && loaded.haut && loaded.haut[1]) {
         // On ne garde que le col et ce qui est sous la ligne d'épaule du maillot :
@@ -564,6 +566,8 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     for (const s of ['bas', 'gants']) {
       const it = byId.get(state.outfit[s]); if (!it) continue;
       // Des jambières sous un cuissard court abaissent sa limite basse jusqu'à celle des jambières.
+      // Des sur-gants coupe-vent par-dessus des gants fins font gagner environ 6 °C.
+      if (s === 'gants' && $('surgants').checked && it.tmax <= 20) { ranges.push([it.tmin - 6, it.tmax, `${it.model} + sur-gants`]); continue; }
       if (s === 'bas' && jw && it.kind === 'court') ranges.push([Math.min(it.tmin, jw.tmin), it.tmax, `${it.model} + ${jw.model}`]);
       else ranges.push([it.tmin, it.tmax, it.model]);
     }
@@ -631,6 +635,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
 
   function applyPreset(p) {
     state.presetId = p.id;
+    $('surgants').checked = !!p.surgants;
     for (const s of SLOTS) state.outfit[s.key] = p[s.key] && byId.has(p[s.key]) ? p[s.key] : null;
     const m = String(p.temp).match(/-?\d+/g);
     if (m) { const nums = m.map(Number); $('temp').value = p.temp.includes('>') ? nums[0] + 3 : Math.round(nums.reduce((a, b) => a + b, 0) / nums.length); updateTempLabel(); }
@@ -679,6 +684,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   $('my-presets').addEventListener('click', (e) => { const b = e.target.closest('[data-my]'); if (b) applyPreset(WARD.outfits.find((p) => p.id === b.dataset.my)); });
   $('portant').addEventListener('change', () => { renderTabs(); renderGrid(); });
   for (const id of ['hide-couche', 'hide-jambieres']) $(id).addEventListener('change', () => render());
+  $('surgants').addEventListener('change', () => renderLegend());
   $('gamme').addEventListener('click', (e) => {
     const b = e.target.closest('[data-g]'); if (!b) return;
     b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
