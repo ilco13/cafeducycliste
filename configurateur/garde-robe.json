@@ -197,7 +197,7 @@
   {
    "id": "f2",
    "name": "Frais · Lydia",
-   "temp": "10–12 °C",
+   "temp": "8–10 °C",
    "haut": "men-cycling-jersey-lydia-mountainfog",
    "sous": "carmen-b-bls-carmen-m-antc",
    "couche": null,
@@ -207,8 +207,8 @@
    "chaussettes": "unisex-cycling-socks-primaloft-black",
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
-   "note": "Lydia + col roulé Carmen, sans veste ; Edith en poche.",
-   "surgants": false
+   "note": "Lydia + col roulé Carmen, sans veste ; Edith en poche. Sur-gants par-dessus les Lightweight.",
+   "surgants": true
   },
   {
    "id": "f3",

@@ -38,7 +38,7 @@ TEMP = {
     'Leather': (4, 12), 'Winter': (-5, 5), 'Lina': (8, 18), 'Norine': (8, 18), 'Edith': (8, 18),
     'Albertine': (-2, 8), 'Lise': (-2, 8), 'Alexia': (-5, 5), 'Manon': (4, 14), 'Sibille': (6, 16),
     'Lili': (6, 14), 'Carissa': (8, 16), 'Olga': (10, 16),
-    'Judith': (0, 12), 'Carmen': (-5, 8), 'Coline': (5, 18), 'Liliane': (18, 35),
+    'Judith': (0, 14), 'Carmen': (-5, 10), 'Coline': (5, 18), 'Liliane': (18, 35),
     'Aero': (12, 35), 'Primaloft': (-5, 10), 'Nordic': (0, 12), 'Downy': (0, 12), 'Motto': (8, 25),
     'Suzette': (2, 20), 'Alizee': (2, 20), 'Ilona': (8, 18), 'Zelie': (-2, 8), 'Irisia': (8, 18),
 }
