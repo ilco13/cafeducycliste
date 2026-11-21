@@ -30,7 +30,7 @@
   "men-cycling-jacket-suzette-lemon-chrome",
   "unisex-cycling-socks-primaloft-grey",
   "unisex-cycling-gloves-lightweight2-grey",
-  "unisex-legwarmer-lili-navy"
+  "men-cycling-bibshort-adrienne2-navy"
  ],
  "outfits": [
   {
@@ -115,13 +115,13 @@
    "haut": "men-cycling-jersey-lydia-mountainfog",
    "sous": "carmen-b-bls-carmen-m-antc",
    "couche": null,
-   "bas": "men-cycling-bibshort-freida-navy",
+   "bas": "men-cycling-bibshort-adrienne2-navy",
    "gants": "unisex-cycling-gloves-lightweight2-grey",
    "chaussettes": "unisex-cycling-socks-primaloft-grey",
-   "note": "Lydia + Carmen sans veste ; Freida Navy avec les jambières Lili Navy. Edith en poche pour les descentes.",
+   "note": "Lydia + Carmen sans veste ; Adrienne Navy, qui ménage tes Freida. Edith en poche pour les descentes.",
    "casque": "helmet-60923-106",
    "chaussures": "shoe-northwave-extreme-r-gtx",
-   "jambieres": "unisex-legwarmer-lili-navy"
+   "jambieres": null
   },
   {
    "id": "r1",
@@ -141,17 +141,17 @@
   {
    "id": "r2",
    "name": "Averse",
-   "temp": "14–16 °C",
+   "temp": "12–15 °C",
    "haut": "men-cycling-jersey-roxane-khaki",
    "sous": null,
    "couche": "men-cycling-jacket-suzette-lemon-chrome",
-   "bas": "men-cycling-bibshort-freida-navy",
+   "bas": "men-cycling-bibshort-adrienne2-navy",
    "gants": "unisex-cycling-gloves-lightweight2-khaki",
    "chaussettes": "unisex-socks-summer-motto-white-black",
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Jaune, kaki et marine : une palette « workwear » qui fonctionne. Suzette repart dans la poche après l'averse.",
-   "jambieres": "unisex-legwarmer-lili-navy"
+   "jambieres": null
   },
   {
    "id": "g1",
@@ -193,7 +193,7 @@
    "gants": "unisex-cycling-summer-mitts2-white",
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
-   "note": "Camaïeu de gris avec le casque Smoke. Départ frais : Lightweight noirs et Edith Mountain Fog en poche.",
+   "note": "Camaïeu de gris, réveillé par le casque blanc. Départ frais : Lightweight noirs et Edith Mountain Fog en poche.",
    "chaussettes": "unisex-socks-summer-motto-white-black",
    "sous": null,
    "jambieres": null
@@ -219,14 +219,14 @@
    "temp": "10–15 °C",
    "haut": "constance-navy-scots-pine",
    "couche": null,
-   "bas": "men-cycling-bibshort-freida-navy",
+   "bas": "men-cycling-bibshort-adrienne2-navy",
    "gants": "unisex-cycling-gloves-lightweight2-black",
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
-   "note": "Le marine des bandes répond au corsaire Adrienne. Edith en poche pour les descentes. Avec les jambières Lili Navy.",
+   "note": "Le marine des bandes répond au corsaire Adrienne. Edith en poche pour les descentes.",
    "chaussettes": "unisex-cycling-socks-primaloft-grey",
    "sous": null,
-   "jambieres": "unisex-legwarmer-lili-navy"
+   "jambieres": null
   },
   {
    "id": "g6",
@@ -234,14 +234,14 @@
    "temp": "10–15 °C",
    "haut": "constance-black-avocado",
    "couche": null,
-   "bas": "men-cycling-bibshort-freida-navy",
+   "bas": "men-cycling-bibshort-adrienne2-navy",
    "gants": "unisex-cycling-gloves-lightweight2-khaki",
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
-   "note": "Gants kaki pour reprendre le vert avocat. Avec un bas noir ce serait encore plus net, mais tu n'en as pas en corsaire. Avec les jambières Lili Navy.",
+   "note": "Gants kaki pour reprendre le vert avocat. Avec un bas noir ce serait encore plus net, mais tu n'en as pas en corsaire.",
    "chaussettes": "unisex-cycling-socks-primaloft-grey",
    "sous": null,
-   "jambieres": "unisex-legwarmer-lili-navy"
+   "jambieres": null
   }
  ]
 }
