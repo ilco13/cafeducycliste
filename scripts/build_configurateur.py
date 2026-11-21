@@ -41,6 +41,30 @@ TEMP = {
 DEFAULT_TEMP = {'maillot_mc': (18, 30), 'maillot_ml': (8, 18), 'gilet': (8, 18), 'veste': (0, 12),
                 'veste_pluie': (2, 15), 'cuissard': (16, 35), 'short': (18, 30), 'collant': (0, 10), 'gants': (5, 20)}
 
+# Noms de coloris lus sur les fiches cafeducycliste.com (les identifiants n'en donnent qu'un code).
+COLOURS = json.load(open(os.path.join(ROOT, 'data', 'coloris.json')))
+
+# Anciens coloris absents du catalogue en ligne, repris chez des revendeurs.
+EXTRA = [  # (id, modèle, coloris, image, prix €, saison, catégorie, gamme)
+    ('constance-black-avocado', 'Constance', 'Black / Avocado',
+     'https://static.wixstatic.com/media/e7fbda_dcd255be05f54274b3448a02fb447217~mv2.jpg/v1/fill/w_1230,h_1500,al_c,q_90/a.jpg',
+     180, 'Archive', 'maillot_ml', 'race'),
+    ('constance-navy-scots-pine', 'Constance', 'Navy / Scots Pine',
+     'https://cdn.shopify.com/s/files/1/0561/3322/2572/files/B-JLS-CONSTA-M-NVSP_FR_1500X2000_91359a47-0f47-43e6-a17e-7e902b9a3bfe.png',
+     180, 'Archive', 'maillot_ml', 'race'),
+    ('constance-black-quetsche', 'Constance', 'Black / Quetsche',
+     'https://cdn.shopify.com/s/files/1/0561/3322/2572/files/B-JLS-CONSTA-M-BKQC_1500x2000_01_FR_67473fc7-99ad-45cd-bc00-30375fc72e12.jpg',
+     180, 'Archive', 'maillot_ml', 'race'),
+    ('constance-navy-chalk', 'Constance', 'Navy / Chalk',
+     'https://cdn.shopify.com/s/files/1/0561/3322/2572/files/B-JLS-CONSTA-M-NVCK_FR_1500X2000_ab3164b2-cb3a-4d3f-9fe7-668605ad98f0.jpg',
+     180, 'Archive', 'maillot_ml', 'race'),
+]
+EXTRA_HELMETS = [  # (id, modèle, coloris, image, usage)
+    ('helmet-evade3-smoke', 'S-Works Evade 3', 'Smoke', 'https://www.balfesbikes.co.uk/images/products/2/27/275668-smk.jpg', 'Aéro'),
+    ('helmet-evade3-black', 'S-Works Evade 3', 'Noir',
+     'https://resources.specialized.com/image/60723-100_HLMT_SW-EVADE-3-HLMT-CE-BLK-M_HERO-SQUARE?w=1000&h=1000&q=85', 'Aéro'),
+]
+
 HELMETS = [  # (modèle, coloris, image Specialized, usage)
     ('S-Works Prevail 3', 'Blanc', '60923-106_HLMT_SW-PREVAIL-3-HLMT-CE-WHT-M_HERO-SQUARE', 'Ventilation'),
     ('S-Works Prevail 3', 'Blanc / noir', '60923-107_HLMT_SW-PREVAIL-3-HLMT-CE-WHT-BLK-M_HERO-SQUARE', 'Ventilation'),
@@ -122,10 +146,8 @@ def main():
         try:
             src = fetch(r['image_principale'].split('?')[0] + '?width=1100', handle + '.png')
             im = Image.open(src).convert('RGBA')
-            if im.getpixel((2, 2))[3] > 10:  # pas détouré : on l'écarte
-                print('skip (pas de transparence)', handle)
-                continue
-            im = cutout(src)
+            # Photo sur fond : détourage automatique ; sinon le PNG est déjà détouré.
+            im = cutout(src, remove_bg=im.getpixel((2, 2))[3] > 10)
         except Exception as e:  # noqa: BLE001
             print('skip', handle, e)
             continue
@@ -136,12 +158,28 @@ def main():
         from flatlay import colour_name
         items.append({
             'id': handle, 'slot': SLOT[r['categorie']], 'cat': r['categorie'], 'brand': 'Café du Cycliste',
-            'model': r['modele'], 'colour': colour_name(handle), 'price': float(r['prix_eur']),
+            'model': r['modele'], 'colour': COLOURS.get(handle, colour_name(handle)), 'price': float(r['prix_eur']),
             'gamme': r['gamme'] or '', 'season': slab, 'seasonKind': skind, 'tmin': tmin, 'tmax': tmax,
             'kind': bottom_kind(r) if SLOT[r['categorie']] == 'bas' else r['categorie'],
             'img': 'assets/' + handle + '.webp', 'w': w, 'h': h, 'url': r['url'],
         })
         print('ok', handle)
+    for iid, model, colour, url, price, season, cat, gamme in EXTRA:
+        im = cutout(fetch(url, iid + '.src'), remove_bg=True)
+        w, h = save(im, iid + '.webp')
+        fam = model.split()[0]
+        tmin, tmax = TEMP.get(fam, DEFAULT_TEMP[cat])
+        items.append({'id': iid, 'slot': SLOT[cat], 'cat': cat, 'brand': 'Café du Cycliste', 'model': model,
+                      'colour': colour, 'price': float(price), 'gamme': gamme, 'season': season, 'seasonKind': 'old',
+                      'tmin': tmin, 'tmax': tmax, 'kind': cat, 'img': 'assets/' + iid + '.webp', 'w': w, 'h': h,
+                      'url': ''})
+        print('ok', iid)
+    for iid, model, colour, url, use in EXTRA_HELMETS:
+        im = trim_helmet_shadow(cutout(fetch(url, iid + '.src'), remove_bg=True, hard=True))
+        w, h = save(im, iid + '.webp', force=True)
+        items.append({'id': iid, 'slot': 'casque', 'brand': 'Specialized', 'model': model, 'colour': colour,
+                      'price': None, 'use': use, 'img': 'assets/' + iid + '.webp', 'w': w, 'h': h, 'url': ''})
+        print('ok', iid)
     for model, colour, ref, use in HELMETS:
         im = cutout(fetch(f'https://resources.specialized.com/image/{ref}?w=1000&h=1000&q=85', ref + '.png'),
                     remove_bg=True, hard=True)
