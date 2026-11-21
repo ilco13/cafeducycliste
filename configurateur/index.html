@@ -145,7 +145,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
 <header class="top">
   <div>
     <h1>Cabine d'essayage Café du Cycliste</h1>
-    <p class="sub">Mannequin homme 1,80 m · casques Specialized · chaussures NIMBL</p>
+    <p class="sub">Mannequin homme 1,80 m · casques Specialized · chaussures NIMBL et Northwave</p>
   </div>
   <p class="note">Superposition des packshots officiels sur un mannequin à l'échelle. Le rendu montre la silhouette et les couleurs, pas le tombé réel du tissu.</p>
 </header>
@@ -234,6 +234,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     { key: 'bas', label: 'Cuissard / collant' },
     { key: 'gants', label: 'Gants' },
     { key: 'casque', label: 'Casque' },
+    { key: 'chaussettes', label: 'Chaussettes', optional: true },
     { key: 'chaussures', label: 'Chaussures' },
   ];
   // Repères du mannequin, en cm depuis le sommet du crâne (homme 180 cm).
@@ -301,6 +302,27 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     c.arc(e[0], e[1], w, ang + Math.PI, ang, true);
     for (let i = right.length - 1; i >= 0; i--) c.lineTo(...right[i]);
     c.closePath();
+  }
+  function legPath(c, s) {
+    c.beginPath();
+    c.moveTo(s * 17.5, 86); c.bezierCurveTo(s * 18.5, 104, s * 13.5, 120, s * 11.2, 132);
+    c.bezierCurveTo(s * 11.5, 146, s * 8.6, 160, s * 6.4, 172);
+    c.lineTo(s * 2.4, 172); c.bezierCurveTo(s * 2.6, 160, s * 3.6, 145, s * 3.0, 132);
+    c.bezierCurveTo(s * 2.8, 118, s * 1.6, 104, s * 0.6, 93); c.lineTo(0, 93); c.closePath();
+  }
+  function drawSocks(c, im) {
+    // La photo montre une paire de profil : on prend la tige de la chaussette de devant
+    // et on la plaque sur chaque mollet, découpée à la forme de la jambe et du pied.
+    const sx = 0, sy = 0, sw = im.width * 0.56, sh = im.height * 0.62;
+    for (const s of [-1, 1]) {
+      c.save();
+      legPath(c, s);
+      c.ellipse(s * 4.6, 177, 4.4, 4.6, 0, 0, Math.PI * 2);
+      c.clip();
+      const x0 = s > 0 ? 1.2 : -11.2;
+      c.drawImage(im, sx, sy, sw, sh, x0, 149, 10, 31);
+      c.restore();
+    }
   }
   function drawMannequin(c, showArms) {
     const skin = c.createLinearGradient(-30, 0, 30, 0);
@@ -374,7 +396,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       case 'couche': top = 23.5; h = item.cat === 'gilet' ? 66 : 70; break;
       case 'bas': { top = 29.5; const bottom = item.kind === 'collant' ? 174 : item.kind === '3/4' ? 150 : 121; h = bottom - top; break; }
       case 'casque': { const w = 31; h = w / ar; top = -3.5; break; }
-      case 'chaussures': { const w = 44; h = w / ar; top = 182 - h; break; }
+      case 'chaussures': { const w = item.single ? 21 : 44; h = w / ar; top = 182 - h; break; }
       default: break;
     }
     const t = tweaks[item.id] || {};
@@ -392,7 +414,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     const pxW = Math.max(300, Math.round(rect.width * dpr));
     const pxH = Math.round(pxW * M.H / M.W);
     if (cv.width !== pxW || cv.height !== pxH) { cv.width = pxW; cv.height = pxH; }
-    const order = ['bas', 'haut', 'couche', 'chaussures', 'gants', 'casque'];
+    const order = ['bas', 'chaussettes', 'haut', 'couche', 'chaussures', 'gants', 'casque'];
     const loaded = {};
     await Promise.all(order.map(async (s) => { const it = byId.get(state.outfit[s]); if (it) loaded[s] = [it, await loadImg(it)]; }));
     if (seq !== renderSeq) return; // un rendu plus récent a été demandé entre-temps
@@ -410,6 +432,15 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       const [it, im] = pair; const p = placement(it, im);
       c.save();
       c.shadowColor = 'rgba(0,0,0,0.18)'; c.shadowBlur = 1.2 * k; c.shadowOffsetY = 0.4 * k;
+      if (it.slot === 'chaussettes') { c.shadowColor = 'transparent'; drawSocks(c, im); c.restore(); continue; }
+      if (it.slot === 'chaussures' && it.single) {
+        // Chaussure photographiée seule : une par pied, pointe vers l'extérieur.
+        for (const side of [-1, 1]) {
+          c.save(); c.translate(side * 8.5, 0); if (side < 0) c.scale(-1, 1);
+          c.drawImage(im, -p.w / 2, p.y, p.w, p.h); c.restore();
+        }
+        c.restore(); continue;
+      }
       if (p.glove) {
         for (const side of [-1, 1]) {
           const a = armPoints(side);

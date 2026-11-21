@@ -19,7 +19,8 @@ ASSETS = os.path.join(OUT, 'assets')
 MAX_H = 640
 
 SLOT = {'maillot_mc': 'haut', 'maillot_ml': 'haut', 'gilet': 'couche', 'veste': 'couche',
-        'veste_pluie': 'couche', 'cuissard': 'bas', 'short': 'bas', 'collant': 'bas', 'gants': 'gants'}
+        'veste_pluie': 'couche', 'cuissard': 'bas', 'short': 'bas', 'collant': 'bas', 'gants': 'gants',
+        'chaussettes': 'chaussettes'}
 
 # Plages de température estimées (°C), d'après docs/gamme-cafe-du-cycliste.md.
 TEMP = {
@@ -36,10 +37,12 @@ TEMP = {
     'Elise': (-2, 5), 'Summer': (16, 35), 'Lightweight': (10, 16), 'Softshell': (4, 12), 'Classic': (2, 10),
     'Leather': (4, 12), 'Winter': (-5, 5), 'Lina': (8, 18), 'Norine': (8, 18), 'Edith': (8, 18),
     'Albertine': (-2, 8), 'Lise': (-2, 8), 'Alexia': (-5, 5), 'Manon': (4, 14), 'Sibille': (6, 16),
+    'Aero': (12, 35), 'Primaloft': (-5, 10), 'Nordic': (0, 12), 'Downy': (0, 12), 'Motto': (8, 25),
     'Suzette': (2, 15), 'Alizee': (2, 15), 'Ilona': (8, 18), 'Zelie': (-2, 8), 'Irisia': (8, 18),
 }
 DEFAULT_TEMP = {'maillot_mc': (18, 30), 'maillot_ml': (8, 18), 'gilet': (8, 18), 'veste': (0, 12),
-                'veste_pluie': (2, 15), 'cuissard': (16, 35), 'short': (18, 30), 'collant': (0, 10), 'gants': (5, 20)}
+                'veste_pluie': (2, 15), 'cuissard': (16, 35), 'short': (18, 30), 'collant': (0, 10), 'gants': (5, 20),
+                'chaussettes': (10, 30)}
 
 # Noms de coloris lus sur les fiches cafeducycliste.com (les identifiants n'en donnent qu'un code).
 COLOURS = json.load(open(os.path.join(ROOT, 'data', 'coloris.json')))
@@ -63,6 +66,11 @@ EXTRA_HELMETS = [  # (id, modèle, coloris, image, usage)
     ('helmet-evade3-smoke', 'S-Works Evade 3', 'Smoke', 'https://www.balfesbikes.co.uk/images/products/2/27/275668-smk.jpg', 'Aéro'),
     ('helmet-evade3-black', 'S-Works Evade 3', 'Noir',
      'https://resources.specialized.com/image/60723-100_HLMT_SW-EVADE-3-HLMT-CE-BLK-M_HERO-SQUARE?w=1000&h=1000&q=85', 'Aéro'),
+]
+
+EXTRA_SHOES = [  # (id, marque, modèle, coloris, image, prix €, usage, chaussure seule ?)
+    ('shoe-northwave-extreme-r-gtx', 'Northwave', 'Extreme R GTX', 'Black',
+     'https://www.northwave.com/2528-thickbox_default/extreme-r-gtx.jpg', 319.99, 'Route · hiver Gore-Tex', True),
 ]
 
 HELMETS = [  # (modèle, coloris, image Specialized, usage)
@@ -139,7 +147,8 @@ def main():
         if not ('Male' in r['genre'] or 'Unisex' in r['genre']):
             continue
         handle = r['url'].split('/')[-1]
-        key = (r['modele'], r['coloris'], r['categorie'])
+        from flatlay import colour_name as _cn
+        key = (r['modele'], COLOURS.get(handle, _cn(handle)), r['categorie'])
         if key in seen:
             continue
         seen.add(key)
@@ -201,6 +210,13 @@ def main():
         items.append({'id': name[:-5], 'slot': 'chaussures', 'brand': 'NIMBL', 'model': model, 'colour': '',
                       'price': price, 'use': use, 'img': 'assets/' + name, 'w': w, 'h': h, 'url': 'https://nimbl.cc/'})
         print('ok', name)
+
+    for iid, brand, model, colour, url, price, use, single in EXTRA_SHOES:
+        im = cutout(fetch(url, iid + '.src'), remove_bg=True)
+        w, h = save(im, iid + '.webp')
+        items.append({'id': iid, 'slot': 'chaussures', 'brand': brand, 'model': model, 'colour': colour, 'price': price,
+                      'use': use, 'single': single, 'img': 'assets/' + iid + '.webp', 'w': w, 'h': h, 'url': url})
+        print('ok', iid)
 
     # Tenues prédéfinies (flatlay/tenues.json) traduites en identifiants du configurateur.
     ids = {i['id'] for i in items}
