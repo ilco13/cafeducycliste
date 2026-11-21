@@ -133,6 +133,28 @@ def trim_helmet_shadow(im):
     return im
 
 
+def cuff_points(path):
+    """Position des poignets (bas des manches) d'un vêtement à manches longues, en fractions de l'image.
+
+    Dans chaque tiers latéral, on prend la ligne opaque la plus basse ; le poignet est au centre de cette ligne.
+    """
+    import numpy as np
+    a = np.asarray(Image.open(path).convert('RGBA').split()[-1]) > 40
+    h, w = a.shape
+    out = []
+    for x0, x1 in ((0, int(w * 0.3)), (int(w * 0.7), w)):
+        zone = a[:, x0:x1]
+        rows = np.where(zone.any(axis=1))[0]
+        if not len(rows):
+            return None
+        y = rows.max()
+        # moyenne sur les quelques lignes du bas pour éviter un pixel isolé
+        band = zone[max(0, y - 6):y + 1].any(axis=0)
+        xs = np.where(band)[0] + x0
+        out.append([round(float(xs.mean()) / w, 4), round(float(y) / h, 4)])
+    return out
+
+
 def save(im, name, force=False):
     path = os.path.join(ASSETS, name)
     if not force and os.path.exists(path):
@@ -237,6 +259,11 @@ def main():
         items.append({'id': iid, 'slot': 'chaussures', 'brand': brand, 'model': model, 'colour': colour, 'price': price,
                       'use': use, 'single': single, 'img': 'assets/' + iid + '.webp', 'w': w, 'h': h, 'url': url})
         print('ok', iid)
+
+    # Poignets des vêtements à manches longues, pour accrocher les gants au bout des manches.
+    for it in items:
+        if it.get('cat') in ('maillot_ml', 'veste', 'veste_pluie') or it.get('sleeves') == 'long':
+            it['cuffs'] = cuff_points(os.path.join(OUT, it['img']))
 
     # Tenues prédéfinies (flatlay/tenues.json) traduites en identifiants du configurateur.
     ids = {i['id'] for i in items}

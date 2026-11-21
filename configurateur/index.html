@@ -128,6 +128,7 @@ select { font: inherit; color: var(--fg); background: var(--bg); border: 1px sol
 .own { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: 1px; border: 1px solid var(--accent); color: var(--accent); }
 .own.wish { border-style: dashed; color: var(--muted); border-color: var(--muted); }
 .card .own { margin-left: 0; margin-top: 2px; }
+.view-toggles { display: flex; flex-wrap: wrap; gap: 6px 16px; }
 .outfit-note { background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; font-size: 13px; }
 .outfit-note b { font-family: var(--font-display); }
 .none-card { place-items: center; color: var(--muted); font-size: 12px; min-height: 120px; }
@@ -155,6 +156,10 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     <div class="stage">
       <span class="stage-badge">Mannequin H · 180 cm</span>
       <canvas id="cv" width="600" height="960" role="img" aria-label="Mannequin habillé avec la tenue sélectionnée"></canvas>
+    </div>
+    <div class="view-toggles" role="group" aria-label="Affichage">
+      <label class="toggle"><input type="checkbox" id="hide-couche"> Masquer la veste / le gilet</label>
+      <label class="toggle"><input type="checkbox" id="hide-jambieres"> Masquer les jambières</label>
     </div>
     <div id="outfit-note" class="outfit-note" hidden></div>
     <div id="check" class="check ok" role="status"><span class="dot"></span><span id="check-text">Chargement…</span></div>
@@ -362,7 +367,8 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     // Bras (masqués sous une manche longue ou une veste, qui les couvrent déjà)
     for (const s of [-1, 1]) {
       const a = armPoints(s);
-      if (showArms) { limb(c, [a.shoulder, a.elbow, a.wrist], [5.6, 4.0, 2.9]); c.fill(); c.stroke(); }
+      if (!showArms) continue; // bras et mains couverts par les manches longues (les gants pendent des poignets)
+      limb(c, [a.shoulder, a.elbow, a.wrist], [5.6, 4.0, 2.9]); c.fill(); c.stroke();
       c.save(); c.translate(...a.hand); c.rotate(-s * M.armAngle);
       c.beginPath(); c.ellipse(0, 1.5, 3.6, 8.2, 0, 0, Math.PI * 2); c.fill(); c.stroke(); c.restore();
     }
@@ -444,11 +450,12 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     c.setTransform(k, 0, 0, k, cv.width / 2, M.top * k);
     c.imageSmoothingQuality = 'high';
     drawRuler(c);
+    const hidden = (slot) => (slot === 'couche' && $('hide-couche').checked) || (slot === 'jambieres' && $('hide-jambieres').checked);
     const topIt = byId.get(state.outfit.haut);
     const sousIt = byId.get(state.outfit.sous);
-    drawMannequin(c, !state.outfit.couche && !(topIt && topIt.cat === 'maillot_ml') && !(sousIt && sousIt.sleeves === 'long'));
+    drawMannequin(c, !(state.outfit.couche && !hidden('couche')) && !(topIt && topIt.cat === 'maillot_ml') && !(sousIt && sousIt.sleeves === 'long'));
     for (const s of order) {
-      const pair = loaded[s]; if (!pair || !pair[1]) continue;
+      const pair = loaded[s]; if (!pair || !pair[1] || hidden(s)) continue;
       const [it, im] = pair; const p = placement(it, im);
       // Une veste par-dessus un maillot plus large est élargie (jusqu'à +20 %) pour le couvrir.
       if (s === 'couche' && loaded.haut && loaded.haut[1]) {
@@ -468,14 +475,26 @@ details.tune summary { cursor: pointer; font-weight: 600; }
         c.restore(); continue;
       }
       if (p.glove) {
+        // Les gants s'accrochent au poignet du vêtement à manches longues le plus extérieur visible ;
+        // sinon (manches courtes) au poignet du mannequin.
+        let cuffs = null;
+        for (const slot of ['couche', 'haut', 'sous']) {
+          const pr = loaded[slot]; if (!pr || !pr[1] || hidden(slot) || !pr[0].cuffs) continue;
+          const g = placement(pr[0], pr[1]);
+          cuffs = pr[0].cuffs.map(([fx, fy]) => [g.x + fx * g.w, g.y + fy * g.h]);
+          break;
+        }
         for (const side of [-1, 1]) {
           const a = armPoints(side);
+          const anchor = cuffs ? cuffs[side < 0 ? 0 : 1] : a.wrist;
+          const tilt = cuffs ? 6 * Math.PI / 180 : M.armAngle;
           c.save();
-          c.translate(a.hand[0] + side * p.dx, a.hand[1] + 1.5 + p.dy);
-          c.rotate(Math.PI - side * M.armAngle);
+          // le haut du gant remonte d'1 cm sur la manche
+          c.translate(anchor[0] + side * p.dx, anchor[1] - 1 + p.dy);
+          c.rotate(Math.PI - side * tilt);
           if (side === 1) c.scale(-1, 1);
           const w = p.h * p.ar;
-          c.drawImage(im, -w / 2, -p.h / 2, w, p.h);
+          c.drawImage(im, -w / 2, -p.h, w, p.h);
           c.restore();
         }
       } else {
@@ -637,6 +656,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   });
   $('my-presets').addEventListener('click', (e) => { const b = e.target.closest('[data-my]'); if (b) applyPreset(WARD.outfits.find((p) => p.id === b.dataset.my)); });
   $('portant').addEventListener('change', () => { renderTabs(); renderGrid(); });
+  for (const id of ['hide-couche', 'hide-jambieres']) $(id).addEventListener('change', () => render());
   $('gamme').addEventListener('click', (e) => {
     const b = e.target.closest('[data-g]'); if (!b) return;
     b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
