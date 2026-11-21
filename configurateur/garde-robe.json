@@ -23,30 +23,29 @@
   "men-cycling-bibtight-marie2-carob",
   "men-cycling-bibshort-marinette4-anthracite",
   "men-cycling-bibtight-elise2-black",
-  "men-cycling-bibshort-adrienne2-navy",
-  "unisex-cycling-socks-primaloft-khaki",
-  "unisex-cycling-socks-primaloft-navy",
-  "unisex-cycling-socks-primaloft-black",
   "carmen-b-bls-carmen-m-antc",
   "judith-b-bls-judith-m-antc",
   "manon-b-jth-manon-m-rven",
   "men-cycling-jacket-suzette-lemon-chrome",
-  "unisex-cycling-gloves-winter-black"
+  "unisex-cycling-socks-primaloft-grey",
+  "unisex-cycling-gloves-lightweight2-grey",
+  "unisex-legwarmer-lili-navy"
  ],
  "outfits": [
   {
    "id": "h1",
    "name": "Froid 1",
-   "temp": "0–5 °C",
+   "temp": "4–6 °C",
    "haut": "constance-navy-scots-pine",
    "sous": "carmen-b-bls-carmen-m-antc",
    "couche": "manon-b-jth-manon-m-rven",
    "bas": "men-cycling-bibtight-elise2-black",
-   "gants": "unisex-cycling-gloves-winter-black",
-   "chaussettes": "unisex-cycling-socks-primaloft-black",
-   "note": "Kit le plus chaud : col roulé Carmen, Manon fermée, Elise et gants d'hiver. Le graphite de Manon et le noir d'Elise encadrent les bandes marine et vert.",
+   "gants": "unisex-cycling-gloves-softshell-black",
+   "chaussettes": "unisex-cycling-socks-primaloft-grey",
+   "note": "Kit le plus chaud : col roulé Carmen, Manon fermée, Elise. Softshell aux mains ; sous 2 °C, des manchons de guidon.",
    "casque": "helmet-evade3-black",
-   "chaussures": "shoe-northwave-extreme-r-gtx"
+   "chaussures": "shoe-northwave-extreme-r-gtx",
+   "jambieres": null
   },
   {
    "id": "h2",
@@ -57,10 +56,11 @@
    "couche": "manon-b-jth-manon-m-rven",
    "bas": "men-cycling-bibtight-marie2-carob",
    "gants": "unisex-cycling-gloves-softshell-black",
-   "chaussettes": "unisex-cycling-socks-primaloft-khaki",
-   "note": "Palette terre : avocat, carob, kaki. Judith dessous ; ajoute un tour de cou si moins de 3 °C. Sous 4 °C, prends les Winter Gloves (ou une 2ᵉ paire).",
+   "chaussettes": "unisex-cycling-socks-primaloft-grey",
+   "note": "Palette terre : avocat, carob, kaki. Judith dessous ; ajoute un tour de cou si moins de 3 °C.",
    "casque": "helmet-evade3-black",
-   "chaussures": "shoe-northwave-extreme-r-gtx"
+   "chaussures": "shoe-northwave-extreme-r-gtx",
+   "jambieres": null
   },
   {
    "id": "h3",
@@ -71,10 +71,11 @@
    "couche": "manon-b-jth-manon-m-rven",
    "bas": "endura-fs260-thermo-bib-tights-ii",
    "gants": "unisex-cycling-gloves-softshell-black",
-   "chaussettes": "unisex-cycling-socks-primaloft-navy",
-   "note": "Lydia, le plus épais de tes maillots, sous Manon : gris, graphite et noir. Sous 4 °C, prends les Winter Gloves (ou une 2ᵉ paire).",
+   "chaussettes": "unisex-cycling-socks-primaloft-grey",
+   "note": "Lydia, le plus épais de tes maillots, sous Manon : gris, graphite et noir.",
    "casque": "helmet-evade3-black",
-   "chaussures": "shoe-northwave-extreme-r-gtx"
+   "chaussures": "shoe-northwave-extreme-r-gtx",
+   "jambieres": null
   },
   {
    "id": "f1",
@@ -84,11 +85,12 @@
    "sous": "men-cycling-baselayer-judith-deep-water",
    "couche": "men-cycling-jacket-edith-mountain-fog",
    "bas": "endura-fs260-thermo-bib-tights-ii",
-   "gants": "unisex-cycling-gloves-softshell-black",
-   "chaussettes": "unisex-cycling-socks-primaloft-navy",
-   "note": "Edith se range en poche si ça se réchauffe. L'Endura noir laisse ressortir les bandes marine et vert.",
+   "gants": "unisex-cycling-gloves-lightweight2-black",
+   "chaussettes": "unisex-cycling-socks-primaloft-grey",
+   "note": "Edith se range en poche si ça se réchauffe. L'Endura noir laisse ressortir les bandes marine et vert. Gants Lightweight + sur-gants coupe-vent à retirer quand tu chauffes.",
    "casque": "helmet-evade3-black",
-   "chaussures": "shoe-northwave-extreme-r-gtx"
+   "chaussures": "shoe-northwave-extreme-r-gtx",
+   "jambieres": null
   },
   {
    "id": "f2",
@@ -98,25 +100,57 @@
    "sous": "judith-b-bls-judith-m-antc",
    "couche": "men-cycling-jacket-edith-mountain-fog",
    "bas": "men-cycling-bibtight-marie2-carob",
-   "gants": "unisex-cycling-gloves-softshell-black",
-   "chaussettes": "unisex-cycling-socks-primaloft-khaki",
-   "note": "Avocat et carob avec Edith Mountain Fog. Les gants Softshell se lavent entre deux sorties.",
+   "gants": "unisex-cycling-gloves-lightweight2-khaki",
+   "chaussettes": "unisex-cycling-socks-primaloft-grey",
+   "note": "Avocat et carob avec Edith Mountain Fog. Lightweight kaki assortis, sur-gants coupe-vent si besoin.",
    "casque": "helmet-evade3-black",
-   "chaussures": "shoe-northwave-extreme-r-gtx"
+   "chaussures": "shoe-northwave-extreme-r-gtx",
+   "jambieres": null
   },
   {
    "id": "f3",
    "name": "Frais 3",
-   "temp": "10–12 °C",
+   "temp": "10–14 °C",
    "haut": "men-cycling-jersey-lydia-mountainfog",
    "sous": "carmen-b-bls-carmen-m-antc",
    "couche": null,
-   "bas": "men-cycling-bibshort-adrienne2-navy",
-   "gants": "unisex-cycling-gloves-lightweight2-black",
-   "chaussettes": "unisex-cycling-socks-primaloft-black",
-   "note": "Lydia + Carmen suffisent sans veste ; Edith en poche pour les descentes. Le col roulé remplace le tour de cou.",
+   "bas": "men-cycling-bibshort-freida-navy",
+   "gants": "unisex-cycling-gloves-lightweight2-grey",
+   "chaussettes": "unisex-cycling-socks-primaloft-grey",
+   "note": "Lydia + Carmen sans veste ; Freida Navy avec les jambières Lili Navy. Edith en poche pour les descentes.",
    "casque": "helmet-evade3-black",
-   "chaussures": "shoe-northwave-extreme-r-gtx"
+   "chaussures": "shoe-northwave-extreme-r-gtx",
+   "jambieres": "unisex-legwarmer-lili-navy"
+  },
+  {
+   "id": "r1",
+   "name": "Pluie fraîche",
+   "temp": "5–10 °C",
+   "haut": "constance-navy-scots-pine",
+   "sous": "men-cycling-baselayer-judith-deep-water",
+   "couche": "men-cycling-jacket-suzette-lemon-chrome",
+   "bas": "endura-fs260-thermo-bib-tights-ii",
+   "gants": "unisex-cycling-gloves-lightweight2-black",
+   "chaussettes": "unisex-cycling-socks-primaloft-grey",
+   "casque": "helmet-evade3-black",
+   "chaussures": "shoe-northwave-extreme-r-gtx",
+   "note": "Le jaune ressort sur le marine et le noir : visible et sobre. L'Endura déperlant pour la pluie.",
+   "jambieres": null
+  },
+  {
+   "id": "r2",
+   "name": "Averse",
+   "temp": "14–16 °C",
+   "haut": "men-cycling-jersey-roxane-khaki",
+   "sous": null,
+   "couche": "men-cycling-jacket-suzette-lemon-chrome",
+   "bas": "men-cycling-bibshort-freida-navy",
+   "gants": "unisex-cycling-gloves-lightweight2-khaki",
+   "chaussettes": "unisex-socks-summer-motto-white-black",
+   "casque": "helmet-evade3-smoke",
+   "chaussures": "shoe-ultimate-exceed-pro-edition",
+   "note": "Jaune, kaki et marine : une palette « workwear » qui fonctionne. Suzette repart dans la poche après l'averse.",
+   "jambieres": "unisex-legwarmer-lili-navy"
   },
   {
    "id": "g1",
@@ -130,7 +164,8 @@
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Le vert d'eau ressort mieux sur l'anthracite que sur le marine. Mitaines blanches pour la touche claire. Variante sans achat : Freida Navy.",
    "chaussettes": "cycling-socks-aero-supersonic-white",
-   "sous": null
+   "sous": null,
+   "jambieres": null
   },
   {
    "id": "g2",
@@ -144,7 +179,8 @@
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Ton sur ton bleu profond, le plus « race » de ta garde-robe. Fonctionne aussi avec Marinette Anthracite.",
    "chaussettes": "cycling-socks-aero-black-white",
-   "sous": null
+   "sous": null,
+   "jambieres": null
   },
   {
    "id": "g3",
@@ -158,7 +194,8 @@
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Camaïeu de gris avec le casque Smoke. Départ frais : Lightweight noirs et Edith Mountain Fog en poche.",
    "chaussettes": "unisex-socks-summer-motto-white-black",
-   "sous": null
+   "sous": null,
+   "jambieres": null
   },
   {
    "id": "g4",
@@ -172,7 +209,8 @@
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Gants kaki assortis au maillot, cuissard marine pour la base. Au-dessus de 18 °C, prends les mitaines blanches ; sous 15 °C, passe à Adrienne Navy.",
    "chaussettes": "unisex-socks-summer-motto-white-black",
-   "sous": null
+   "sous": null,
+   "jambieres": null
   },
   {
    "id": "g5",
@@ -180,13 +218,14 @@
    "temp": "10–15 °C",
    "haut": "constance-navy-scots-pine",
    "couche": null,
-   "bas": "men-cycling-bibshort-adrienne2-navy",
+   "bas": "men-cycling-bibshort-freida-navy",
    "gants": "unisex-cycling-gloves-lightweight2-black",
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
-   "note": "Le marine des bandes répond au corsaire Adrienne. Edith en poche pour les descentes.",
-   "chaussettes": "unisex-cycling-socks-primaloft-navy",
-   "sous": null
+   "note": "Le marine des bandes répond au corsaire Adrienne. Edith en poche pour les descentes. Avec les jambières Lili Navy.",
+   "chaussettes": "unisex-cycling-socks-primaloft-grey",
+   "sous": null,
+   "jambieres": "unisex-legwarmer-lili-navy"
   },
   {
    "id": "g6",
@@ -194,13 +233,14 @@
    "temp": "10–15 °C",
    "haut": "constance-black-avocado",
    "couche": null,
-   "bas": "men-cycling-bibshort-adrienne2-navy",
+   "bas": "men-cycling-bibshort-freida-navy",
    "gants": "unisex-cycling-gloves-lightweight2-khaki",
    "casque": "helmet-evade3-black",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
-   "note": "Gants kaki pour reprendre le vert avocat. Avec un bas noir ce serait encore plus net, mais tu n'en as pas en corsaire.",
-   "chaussettes": "unisex-cycling-socks-primaloft-khaki",
-   "sous": null
+   "note": "Gants kaki pour reprendre le vert avocat. Avec un bas noir ce serait encore plus net, mais tu n'en as pas en corsaire. Avec les jambières Lili Navy.",
+   "chaussettes": "unisex-cycling-socks-primaloft-grey",
+   "sous": null,
+   "jambieres": "unisex-legwarmer-lili-navy"
   }
  ]
 }

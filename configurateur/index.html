@@ -235,6 +235,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     { key: 'bas', label: 'Cuissard / collant' },
     { key: 'gants', label: 'Gants' },
     { key: 'casque', label: 'Casque' },
+    { key: 'jambieres', label: 'Jambières', optional: true },
     { key: 'chaussettes', label: 'Chaussettes', optional: true },
     { key: 'chaussures', label: 'Chaussures' },
   ];
@@ -322,6 +323,19 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       c.clip();
       const x0 = s > 0 ? 1.2 : -11.2;
       c.drawImage(im, sx, sy, sw, sh, x0, 149, 10, 31);
+      c.restore();
+    }
+  }
+  function drawLegWarmers(c, im, it) {
+    // Tube de la jambière (partie centrale du packshot) plaqué sur chaque jambe, de la cuisse à la cheville.
+    const top = /olga/i.test(it.model) ? 112 : 108, bottom = /olga/i.test(it.model) ? 150 : 172;
+    // Le packshot montre la paire côte à côte : moitié gauche sur une jambe, moitié droite sur l'autre.
+    for (const s of [-1, 1]) {
+      c.save(); legPath(c, s); c.clip();
+      c.beginPath(); c.rect(-30, top, 60, bottom - top); c.clip();
+      const sx = s < 0 ? im.width * 0.04 : im.width * 0.54, sw = im.width * 0.42;
+      const x0 = s > 0 ? 0 : -20;
+      c.drawImage(im, sx, 0, sw, im.height, x0, top, 20, bottom - top);
       c.restore();
     }
   }
@@ -419,7 +433,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     const pxW = Math.max(300, Math.round(rect.width * dpr));
     const pxH = Math.round(pxW * M.H / M.W);
     if (cv.width !== pxW || cv.height !== pxH) { cv.width = pxW; cv.height = pxH; }
-    const order = ['sous', 'bas', 'chaussettes', 'haut', 'couche', 'chaussures', 'gants', 'casque'];
+    const order = ['sous', 'jambieres', 'bas', 'chaussettes', 'haut', 'couche', 'chaussures', 'gants', 'casque'];
     const loaded = {};
     await Promise.all(order.map(async (s) => { const it = byId.get(state.outfit[s]); if (it) loaded[s] = [it, await loadImg(it)]; }));
     if (seq !== renderSeq) return; // un rendu plus récent a été demandé entre-temps
@@ -436,8 +450,14 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     for (const s of order) {
       const pair = loaded[s]; if (!pair || !pair[1]) continue;
       const [it, im] = pair; const p = placement(it, im);
+      // Une veste par-dessus un maillot plus large est élargie (jusqu'à +20 %) pour le couvrir.
+      if (s === 'couche' && loaded.haut && loaded.haut[1]) {
+        const tp = placement(loaded.haut[0], loaded.haut[1]);
+        if (tp.w > p.w) { const nw = Math.min(tp.w * 1.02, p.w * 1.2); p.x -= (nw - p.w) / 2; p.w = nw; }
+      }
       c.save();
       c.shadowColor = 'rgba(0,0,0,0.18)'; c.shadowBlur = 1.2 * k; c.shadowOffsetY = 0.4 * k;
+      if (it.slot === 'jambieres') { c.shadowColor = 'transparent'; drawLegWarmers(c, im, it); c.restore(); continue; }
       if (it.slot === 'chaussettes') { c.shadowColor = 'transparent'; drawSocks(c, im); c.restore(); continue; }
       if (it.slot === 'chaussures' && it.single) {
         // Chaussure photographiée seule : une par pied, pointe vers l'extérieur.
@@ -499,7 +519,13 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     if (top && layer) ranges.push([Math.min(top.tmin, layer.tmin) - (layer.cat === 'gilet' ? 3 : 5), Math.min(top.tmax, layer.tmax), `${top.model} + ${layer.model}`]);
     else if (top) ranges.push([top.tmin - (byId.get(state.outfit.sous)?.sleeves === 'long' ? 3 : 0), top.tmax, top.model]);
     else if (layer) ranges.push([layer.tmin, layer.tmax, layer.model]);
-    for (const s of ['bas', 'gants']) { const it = byId.get(state.outfit[s]); if (it) ranges.push([it.tmin, it.tmax, it.model]); }
+    const jw = byId.get(state.outfit.jambieres);
+    for (const s of ['bas', 'gants']) {
+      const it = byId.get(state.outfit[s]); if (!it) continue;
+      // Des jambières sous un cuissard court abaissent sa limite basse jusqu'à celle des jambières.
+      if (s === 'bas' && jw && it.kind === 'court') ranges.push([Math.min(it.tmin, jw.tmin), it.tmax, `${it.model} + ${jw.model}`]);
+      else ranges.push([it.tmin, it.tmax, it.model]);
+    }
     for (const [a, b] of ranges) { lo = Math.max(lo, a); hi = Math.min(hi, b); }
     const T = tempNow();
     if (lo > hi) {
