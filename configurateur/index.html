@@ -469,13 +469,13 @@ details.tune summary { cursor: pointer; font-weight: 600; }
         if (nw < p.w) { p.x += (p.w - nw) / 2; p.w = nw; }
       }
       // Une veste par-dessus un maillot plus large est élargie (jusqu'à +20 %) pour le couvrir.
-      if (s === 'couche' && loaded.haut && loaded.haut[1]) {
+      if (s === 'couche' && it.cat !== 'gilet' && loaded.haut && loaded.haut[1]) {
         const tp = placement(loaded.haut[0], loaded.haut[1]);
         if (tp.w > p.w) { const nw = Math.min(tp.w * 1.02, p.w * 1.2); p.x -= (nw - p.w) / 2; p.w = nw; }
       }
       c.save();
       c.shadowColor = 'rgba(0,0,0,0.18)'; c.shadowBlur = 1.2 * k; c.shadowOffsetY = 0.4 * k;
-      if (it.slot === 'haut' && loaded.couche && loaded.couche[1] && !hidden('couche')) {
+      if (it.slot === 'haut' && loaded.couche && loaded.couche[1] && !hidden('couche') && loaded.couche[0].cat !== 'gilet') {
         // Même principe pour un maillot sous une veste : seuls le col et le bas restent visibles.
         const cp = placement(loaded.couche[0], loaded.couche[1]);
         c.beginPath(); c.rect(-6.5, -10, 13, 200); c.rect(-60, cp.y + 9, 120, 200); c.clip();
