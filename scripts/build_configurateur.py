@@ -20,7 +20,7 @@ MAX_H = 640
 
 SLOT = {'maillot_mc': 'haut', 'maillot_ml': 'haut', 'gilet': 'couche', 'veste': 'couche',
         'veste_pluie': 'couche', 'cuissard': 'bas', 'short': 'bas', 'collant': 'bas', 'gants': 'gants',
-        'chaussettes': 'chaussettes'}
+        'chaussettes': 'chaussettes', 'sous_maillot': 'sous'}
 
 # Plages de température estimées (°C), d'après docs/gamme-cafe-du-cycliste.md.
 TEMP = {
@@ -37,12 +37,13 @@ TEMP = {
     'Elise': (-2, 5), 'Summer': (16, 35), 'Lightweight': (10, 16), 'Softshell': (4, 12), 'Classic': (2, 10),
     'Leather': (4, 12), 'Winter': (-5, 5), 'Lina': (8, 18), 'Norine': (8, 18), 'Edith': (8, 18),
     'Albertine': (-2, 8), 'Lise': (-2, 8), 'Alexia': (-5, 5), 'Manon': (4, 14), 'Sibille': (6, 16),
+    'Judith': (0, 12), 'Carmen': (-5, 8), 'Coline': (5, 18), 'Liliane': (18, 35),
     'Aero': (12, 35), 'Primaloft': (-5, 10), 'Nordic': (0, 12), 'Downy': (0, 12), 'Motto': (8, 25),
     'Suzette': (2, 15), 'Alizee': (2, 15), 'Ilona': (8, 18), 'Zelie': (-2, 8), 'Irisia': (8, 18),
 }
 DEFAULT_TEMP = {'maillot_mc': (18, 30), 'maillot_ml': (8, 18), 'gilet': (8, 18), 'veste': (0, 12),
                 'veste_pluie': (2, 15), 'cuissard': (16, 35), 'short': (18, 30), 'collant': (0, 10), 'gants': (5, 20),
-                'chaussettes': (10, 30)}
+                'chaussettes': (10, 30), 'sous_maillot': (5, 18)}
 
 # Noms de coloris lus sur les fiches cafeducycliste.com (les identifiants n'en donnent qu'un code).
 COLOURS = json.load(open(os.path.join(ROOT, 'data', 'coloris.json')))
@@ -170,6 +171,9 @@ def main():
             'model': r['modele'], 'colour': COLOURS.get(handle, colour_name(handle)), 'price': float(r['prix_eur']),
             'gamme': r['gamme'] or '', 'season': slab, 'seasonKind': skind, 'tmin': tmin, 'tmax': tmax,
             'kind': bottom_kind(r) if SLOT[r['categorie']] == 'bas' else r['categorie'],
+            'sleeves': ('none' if ('sleeveless' in handle or '-bsl-' in handle) else 'short' if r['modele'] == 'Liliane' else 'long')
+            if r['categorie'] == 'sous_maillot' else None,
+            'turtleneck': r['modele'] == 'Carmen',
             'img': 'assets/' + handle + '.webp', 'w': w, 'h': h, 'url': r['url'],
         })
         print('ok', handle)

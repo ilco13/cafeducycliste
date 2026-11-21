@@ -15,7 +15,8 @@
   "men-cycling-jersey-lydia-mountainfog",
   "cycling-socks-aero-supersonic-white",
   "cycling-socks-aero-black-white",
-  "unisex-socks-summer-motto-white-black"
+  "unisex-socks-summer-motto-white-black",
+  "men-cycling-baselayer-judith-deep-water"
  ],
  "wish": [
   "men-cycling-bibtight-marie2-carob",
@@ -38,7 +39,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Le vert d'eau ressort mieux sur l'anthracite que sur le marine. Mitaines blanches pour la touche claire. Variante sans achat : Freida Navy.",
-   "chaussettes": "cycling-socks-aero-supersonic-white"
+   "chaussettes": "cycling-socks-aero-supersonic-white",
+   "sous": null
   },
   {
    "id": "g2",
@@ -51,7 +53,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Ton sur ton bleu profond, le plus « race » de ta garde-robe. Fonctionne aussi avec Marinette Anthracite.",
-   "chaussettes": "cycling-socks-aero-black-white"
+   "chaussettes": "cycling-socks-aero-black-white",
+   "sous": null
   },
   {
    "id": "g3",
@@ -64,7 +67,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Camaïeu de gris avec le casque Smoke. Départ frais : Lightweight noirs et Edith Mountain Fog en poche.",
-   "chaussettes": "unisex-socks-summer-motto-white-black"
+   "chaussettes": "unisex-socks-summer-motto-white-black",
+   "sous": null
   },
   {
    "id": "g4",
@@ -77,7 +81,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Gants kaki assortis au maillot, cuissard marine pour la base. Au-dessus de 18 °C, prends les mitaines blanches ; sous 15 °C, passe à Adrienne Navy.",
-   "chaussettes": "unisex-socks-summer-motto-white-black"
+   "chaussettes": "unisex-socks-summer-motto-white-black",
+   "sous": null
   },
   {
    "id": "g5",
@@ -90,7 +95,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Le marine des bandes répond au corsaire Adrienne. Edith en poche pour les descentes.",
-   "chaussettes": "unisex-cycling-socks-primaloft-navy"
+   "chaussettes": "unisex-cycling-socks-primaloft-navy",
+   "sous": null
   },
   {
    "id": "g6",
@@ -103,7 +109,8 @@
    "casque": "helmet-evade3-black",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Gants kaki pour reprendre le vert avocat. Avec un bas noir ce serait encore plus net, mais tu n'en as pas en corsaire.",
-   "chaussettes": "unisex-cycling-socks-primaloft-khaki"
+   "chaussettes": "unisex-cycling-socks-primaloft-khaki",
+   "sous": null
   },
   {
    "id": "g7",
@@ -116,7 +123,8 @@
    "casque": "helmet-evade3-black",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Sous-maillot Judith Deep Water dessous. Avocat, carob et gris brumeux : la palette la plus cohérente pour Marie Carob.",
-   "chaussettes": "unisex-cycling-socks-primaloft-khaki"
+   "chaussettes": "unisex-cycling-socks-primaloft-khaki",
+   "sous": "men-cycling-baselayer-judith-deep-water"
   },
   {
    "id": "g8",
@@ -129,7 +137,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Sous-maillot Judith et Edith Mountain Fog. Le marine et le brun sont un classique, le vert Scots Pine fait le lien.",
-   "chaussettes": "unisex-cycling-socks-primaloft-navy"
+   "chaussettes": "unisex-cycling-socks-primaloft-navy",
+   "sous": "men-cycling-baselayer-judith-deep-water"
   },
   {
    "id": "g9",
@@ -142,7 +151,8 @@
    "casque": "helmet-evade3-black",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Limite : Edith coupe le vent mais n'isole pas. Sous 3 °C il manque une veste isolante et des gants d'hiver.",
-   "chaussettes": "unisex-cycling-socks-primaloft-black"
+   "chaussettes": "unisex-cycling-socks-primaloft-black",
+   "sous": "men-cycling-baselayer-judith-deep-water"
   },
   {
    "id": "g10",
@@ -155,7 +165,8 @@
    "chaussettes": "unisex-cycling-socks-primaloft-khaki",
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
-   "note": "Lydia et Edith en Mountain Fog : un haut tout en gris, réchauffé par le carob et le kaki. Sous-maillot Judith si moins de 6 °C."
+   "note": "Lydia et Edith en Mountain Fog : un haut tout en gris, réchauffé par le carob et le kaki. Sous-maillot Judith si moins de 6 °C.",
+   "sous": "men-cycling-baselayer-judith-deep-water"
   },
   {
    "id": "g11",
@@ -168,7 +179,8 @@
    "chaussettes": "unisex-cycling-socks-primaloft-navy",
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
-   "note": "Gris et marine, sobre. Lydia est un maillot épais : au-dessus de 12 °C, préfère Constance ou Roxane."
+   "note": "Gris et marine, sobre. Lydia est un maillot épais : au-dessus de 12 °C, préfère Constance ou Roxane.",
+   "sous": null
   }
  ]
 }

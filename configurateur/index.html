@@ -229,6 +229,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
 <script>
 (() => {
   const SLOTS = [
+    { key: 'sous', label: 'Sous-maillot', optional: true },
     { key: 'haut', label: 'Maillot' },
     { key: 'couche', label: 'Veste / gilet', optional: true },
     { key: 'bas', label: 'Cuissard / collant' },
@@ -392,6 +393,8 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     const ar = im.width / im.height;
     let h, cx = 0, top, rot = 0, mirror = false;
     switch (item.slot) {
+      // Sous-maillot : col rond juste sous celui du maillot ; col roulé jusqu'à mi-cou.
+      case 'sous': top = item.turtleneck ? 18 : 26; h = 92 - top; break;
       case 'haut': top = 24.5; h = item.cat === 'maillot_ml' ? 67 : 64; break;
       case 'couche': top = 23.5; h = item.cat === 'gilet' ? 66 : 70; break;
       case 'bas': { top = 29.5; const bottom = item.kind === 'collant' ? 174 : item.kind === '3/4' ? 150 : 121; h = bottom - top; break; }
@@ -403,7 +406,9 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     const k = (t.s || 100) / 100;
     if (item.slot === 'gants') return { glove: true, h: (/summer/i.test(item.model) ? 15 : 21) * k, ar, dx: t.x || 0, dy: t.y || 0 };
     const H = h * k, W = H * ar;
-    return { x: cx - W / 2 + (t.x || 0), y: top + (t.y || 0) - (H - h) / 2 * (item.slot === 'bas' ? 0 : 1), w: W, h: H, rot, mirror };
+    // Un sous-maillot est près du corps : plus étroit que le maillot qui le recouvre.
+    const Wd = item.slot === 'sous' ? W * 0.8 : W;
+    return { x: cx - Wd / 2 + (t.x || 0), y: top + (t.y || 0) - (H - h) / 2 * (item.slot === 'bas' ? 0 : 1), w: Wd, h: H, rot, mirror };
   }
 
   let renderSeq = 0;
@@ -414,7 +419,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     const pxW = Math.max(300, Math.round(rect.width * dpr));
     const pxH = Math.round(pxW * M.H / M.W);
     if (cv.width !== pxW || cv.height !== pxH) { cv.width = pxW; cv.height = pxH; }
-    const order = ['bas', 'chaussettes', 'haut', 'couche', 'chaussures', 'gants', 'casque'];
+    const order = ['sous', 'bas', 'chaussettes', 'haut', 'couche', 'chaussures', 'gants', 'casque'];
     const loaded = {};
     await Promise.all(order.map(async (s) => { const it = byId.get(state.outfit[s]); if (it) loaded[s] = [it, await loadImg(it)]; }));
     if (seq !== renderSeq) return; // un rendu plus récent a été demandé entre-temps
@@ -426,7 +431,8 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     c.imageSmoothingQuality = 'high';
     drawRuler(c);
     const topIt = byId.get(state.outfit.haut);
-    drawMannequin(c, !state.outfit.couche && !(topIt && topIt.cat === 'maillot_ml'));
+    const sousIt = byId.get(state.outfit.sous);
+    drawMannequin(c, !state.outfit.couche && !(topIt && topIt.cat === 'maillot_ml') && !(sousIt && sousIt.sleeves === 'long'));
     for (const s of order) {
       const pair = loaded[s]; if (!pair || !pair[1]) continue;
       const [it, im] = pair; const p = placement(it, im);
@@ -491,7 +497,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     const ranges = [];
     // Une couche par-dessus réchauffe : la limite basse descend (≈3 °C pour un gilet, 5 °C pour une veste).
     if (top && layer) ranges.push([Math.min(top.tmin, layer.tmin) - (layer.cat === 'gilet' ? 3 : 5), Math.min(top.tmax, layer.tmax), `${top.model} + ${layer.model}`]);
-    else if (top) ranges.push([top.tmin, top.tmax, top.model]);
+    else if (top) ranges.push([top.tmin - (byId.get(state.outfit.sous)?.sleeves === 'long' ? 3 : 0), top.tmax, top.model]);
     else if (layer) ranges.push([layer.tmin, layer.tmax, layer.model]);
     for (const s of ['bas', 'gants']) { const it = byId.get(state.outfit[s]); if (it) ranges.push([it.tmin, it.tmax, it.model]); }
     for (const [a, b] of ranges) { lo = Math.max(lo, a); hi = Math.min(hi, b); }
