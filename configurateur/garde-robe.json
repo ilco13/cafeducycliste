@@ -50,7 +50,8 @@
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Vert d'eau sur anthracite, mitaines et chaussettes blanches : frais et net.",
-   "surgants": false
+   "surgants": false,
+   "pluie": false
   },
   {
    "id": "e2",
@@ -66,7 +67,8 @@
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Ton sur ton bleu profond, la tenue la plus « race ».",
-   "surgants": false
+   "surgants": false,
+   "pluie": false
   },
   {
    "id": "e3",
@@ -82,7 +84,8 @@
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Taupe et marine, sobre. Casque blanc et mitaines blanches pour la lumière.",
-   "surgants": false
+   "surgants": false,
+   "pluie": false
   },
   {
    "id": "m1",
@@ -98,7 +101,8 @@
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Camaïeu de gris. Départ frais : Lightweight noirs, Edith en poche.",
-   "surgants": false
+   "surgants": false,
+   "pluie": false
   },
   {
    "id": "m2",
@@ -114,7 +118,8 @@
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Gants kaki assortis si départ frais ; mitaines blanches ensuite. Base marine.",
-   "surgants": false
+   "surgants": false,
+   "pluie": false
   },
   {
    "id": "m3",
@@ -130,7 +135,8 @@
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Coline sans manches dessous, Edith par-dessus au départ puis dans la poche.",
-   "surgants": false
+   "surgants": false,
+   "pluie": false
   },
   {
    "id": "p1",
@@ -146,7 +152,8 @@
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Le marine des bandes répond au corsaire Adrienne. Edith en poche pour les descentes.",
-   "surgants": false
+   "surgants": false,
+   "pluie": false
   },
   {
    "id": "p2",
@@ -162,7 +169,8 @@
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Jambes nues : seulement si tu as chaud facilement (sinon garde Adrienne). Coline dessous.",
-   "surgants": false
+   "surgants": false,
+   "pluie": false
   },
   {
    "id": "p3",
@@ -178,7 +186,8 @@
    "casque": "helmet-60923-106",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Jambes nues, même remarque. Coline dessous si vent.",
-   "surgants": false
+   "surgants": false,
+   "pluie": false
   },
   {
    "id": "f1",
@@ -194,7 +203,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Judith + Edith. Sur-gants coupe-vent sous 10 °C.",
-   "surgants": true
+   "surgants": true,
+   "pluie": false
   },
   {
    "id": "f2",
@@ -210,7 +220,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Lydia sur Coline sans manches, sans veste ; Edith en poche. Sur-gants par-dessus les Lightweight.",
-   "surgants": true
+   "surgants": true,
+   "pluie": false
   },
   {
    "id": "f3",
@@ -226,7 +237,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Avocat, carob, kaki et Edith Mountain Fog. Sur-gants sous 8 °C.",
-   "surgants": true
+   "surgants": true,
+   "pluie": false
   },
   {
    "id": "h1",
@@ -242,7 +254,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Le plus chaud : Carmen, Manon, Elise, Softshell. Sous 2 °C, manchons de guidon.",
-   "surgants": false
+   "surgants": false,
+   "pluie": false
   },
   {
    "id": "h2",
@@ -258,7 +271,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Manon Oyster et Marie Carob : palette taupe-brun-olive. Sur-gants par-dessus les kaki.",
-   "surgants": true
+   "surgants": true,
+   "pluie": false
   },
   {
    "id": "h3",
@@ -274,7 +288,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Manon portée directement sur Judith, sans maillot : deux couches seulement. Sur-gants si besoin.",
-   "surgants": true
+   "surgants": true,
+   "pluie": false
   },
   {
    "id": "r1",
@@ -290,7 +305,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-northwave-extreme-r-gtx",
    "note": "Le jaune ressort sur le marine et le noir. L'Endura déperlant pour la pluie.",
-   "surgants": true
+   "surgants": true,
+   "pluie": true
   },
   {
    "id": "r2",
@@ -306,7 +322,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Jaune, kaki et marine : palette « workwear ». Suzette repart dans la poche après l'averse.",
-   "surgants": false
+   "surgants": false,
+   "pluie": true
   },
   {
    "id": "r3",
@@ -322,7 +339,8 @@
    "casque": "helmet-evade3-smoke",
    "chaussures": "shoe-ultimate-exceed-pro-edition",
    "note": "Averse d'été : Suzette par-dessus Fleurette, puis dans la poche.",
-   "surgants": false
+   "surgants": false,
+   "pluie": true
   }
  ]
 }

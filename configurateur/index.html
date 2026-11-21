@@ -126,6 +126,9 @@ select { font: inherit; color: var(--fg); background: var(--bg); border: 1px sol
 .card .gm { margin-left: 0; margin-top: 2px; margin-right: 3px; }
 .gm.race { --gc: var(--g-race); } .gm.audax { --gc: var(--g-audax); } .gm.classic { --gc: var(--g-classic); }
 .gm.outlands { --gc: var(--g-outlands); } .gm.active { --gc: var(--g-active); } .gm.explore { --gc: var(--g-explore); }
+.rain-tag { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: 1px; color: var(--g-classic); background: color-mix(in srgb, var(--g-classic) 12%, transparent); }
+.rain-tag.dwr { color: var(--muted); background: color-mix(in srgb, var(--muted) 12%, transparent); }
+.card .rain-tag { margin-left: 0; margin-top: 2px; }
 .own { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: 1px; border: 1px solid var(--accent); color: var(--accent); }
 .own.wish { border-style: dashed; color: var(--muted); border-color: var(--muted); }
 .card .own { margin-left: 0; margin-top: 2px; }
@@ -192,6 +195,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
           <span class="temp-val" id="temp-val">18 °C</span>
         </div>
         <label class="toggle"><input type="checkbox" id="temp-filter" checked> Filtrer le portant sur cette température</label>
+        <label class="toggle"><input type="checkbox" id="rain"> Pluie</label>
       </div>
       <div>
         <p class="label" id="gamme-label">Gammes <span style="text-transform:none;letter-spacing:0">(plusieurs possibles)</span></p>
@@ -260,6 +264,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   const ownSet = new Set(), wishSet = new Set();
   const GAMME = { race: 'Race', audax: 'Audax', classic: 'Classic', outlands: 'Outlands', active: 'Active', explore: 'Explore' };
   const gammeTag = (it) => (it.gamme || '').split('/').filter((g) => GAMME[g]).map((g) => `<span class="gm ${g}">${GAMME[g]}</span>`).join('');
+  const rainTag = (it) => it.rain === 'waterproof' ? '<span class="rain-tag">Imperméable</span>' : it.rain === 'dwr' ? '<span class="rain-tag dwr">Déperlant</span>' : '';
   const ownTag = (it) => ownSet.has(it.id) ? '<span class="own">À moi</span>' : wishSet.has(it.id) ? '<span class="own wish">À acheter</span>' : '';
   const byId = new Map();
   const imgs = new Map();
@@ -610,6 +615,11 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     }
     const inT = T >= lo - 2 && T <= hi + 2;
     const detail = ranges.map(([a, b, n]) => `${n} : ${a}–${b} °C`).join('\n');
+    if ($('rain').checked) {
+      const lay = byId.get(state.outfit.couche);
+      if (!lay || !lay.rain) return { detail, ok: false, text: 'Pluie : ajoute une veste imperméable (Suzette) ou au moins déperlante.' };
+      if (lay.rain === 'dwr' && inT) return { detail, ok: true, text: `Tenue cohérente de ${lo} à ${hi} °C · ${lay.model} est déperlante : bien pour des averses, pas pour une pluie continue` };
+    }
     return { detail, ok: inT, text: inT ? (lo === hi ? `Tenue cohérente à ${lo} °C (estimation)` : `Tenue cohérente de ${lo} à ${hi} °C (estimation)`) : `Tenue prévue pour ${lo}–${hi} °C, pas pour ${T} °C` };
   }
 
@@ -623,7 +633,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       if (!it) return s.optional ? '' : `<div class="legend-row"><span class="slot">${s.label}</span><span class="name" style="color:var(--muted)">—</span><span></span></div>`;
       if (it.brand === 'Café du Cycliste') total += it.price || 0;
       const extra = it.tmin != null ? ` <span style="color:var(--muted);font-family:var(--font-data);font-size:11px">${it.tmin}–${it.tmax} °C</span>` : (it.use ? ` <span style="color:var(--muted);font-size:12px">${it.use}</span>` : '');
-      return `<div class="legend-row"><span class="slot">${s.label}</span><span class="name">${itemTitle(it)}${it.colour ? ' — ' + it.colour : ''}${gammeTag(it)}${pill(it)}${ownTag(it)}${extra}</span><span class="price">${fmtPrice(it.price)}</span></div>`;
+      return `<div class="legend-row"><span class="slot">${s.label}</span><span class="name">${itemTitle(it)}${it.colour ? ' — ' + it.colour : ''}${gammeTag(it)}${pill(it)}${rainTag(it)}${ownTag(it)}${extra}</span><span class="price">${fmtPrice(it.price)}</span></div>`;
     }).join('');
     $('legend').innerHTML = rows + `<div class="legend-total"><span>Total textile Café du Cycliste</span><span>${Math.round(total)} €</span></div>`;
     const ch = coherence();
@@ -643,7 +653,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     html += list.map((it) => `<button type="button" class="card" data-id="${it.id}" aria-pressed="${it.id === cur}">
       <span class="ph"><img loading="lazy" src="${it.img}" alt=""></span>
       <span class="t">${itemTitle(it)}</span>
-      <span class="m">${it.colour || it.use || ''}${it.price ? ' · ' + fmtPrice(it.price) : ''}${(gammeTag(it) || it.season || it.tmin != null) ? '<br>' + gammeTag(it) + (it.tmin != null ? `<span class="temp-tag">${it.tmin}–${it.tmax} °C</span>` : '') + pill(it) : ''}${ownTag(it) ? '<br>' + ownTag(it) : ''}</span>
+      <span class="m">${it.colour || it.use || ''}${it.price ? ' · ' + fmtPrice(it.price) : ''}${(gammeTag(it) || it.season || it.tmin != null) ? '<br>' + gammeTag(it) + (it.tmin != null ? `<span class="temp-tag">${it.tmin}–${it.tmax} °C</span>` : '') + pill(it) : ''}${(ownTag(it) || rainTag(it)) ? '<br>' + rainTag(it) + ownTag(it) : ''}</span>
     </button>`).join('');
     if (!list.length) html += `<p class="empty">Aucune pièce ne correspond à ces filtres. Élargissez la température ou la gamme.</p>`;
     $('grid').innerHTML = html;
@@ -669,6 +679,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
 
   function applyPreset(p) {
     state.presetId = p.id;
+    $('rain').checked = !!p.pluie;
     $('surgants').checked = !!p.surgants;
     for (const s of SLOTS) state.outfit[s.key] = p[s.key] && byId.has(p[s.key]) ? p[s.key] : null;
     const m = String(p.temp).match(/-?\d+/g);
@@ -714,11 +725,14 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       if (o.haut && !gOk(o.haut)) { const alt = choose('haut', (it) => gOk(it) && (fits(it) || (T < it.tmin && T >= it.tmin - 8 && it.cat === 'maillot_ml'))); if (alt) o.haut = alt; }
       // Sous-maillot et veste seulement si besoin, puis on vérifie que l'ensemble du haut n'est ni trop léger ni trop chaud.
       if (T < 14 && Math.random() < 0.7) o.sous = choose('sous', (it) => fits(it, 4));
-      if (T < 10 || (T < 16 && Math.random() < 0.4)) o.couche = choose('couche', (it) => gOk(it) && fits(it, 2));
+      const rainy = $('rain').checked;
+      if (rainy) o.couche = choose('couche', (it) => it.rain === 'waterproof' && fits(it, 4)) || choose('couche', (it) => !!it.rain && fits(it, 2));
+      else if (T < 10 || (T < 16 && Math.random() < 0.4)) o.couche = choose('couche', (it) => gOk(it) && fits(it, 2));
       const tr = topRange(o.sous, o.haut, o.couche);
       if (tr && (T < tr[0] - 1 || T > tr[1] + 1) && attempt < 59) continue;
-      o.bas = choose('bas', (it) => gOk(it) && fits(it));
-      o.gants = choose('gants', (it) => fits(it));
+      // Sous la pluie et au frais : bas et gants déperlants de préférence.
+      o.bas = choose('bas', (it) => gOk(it) && fits(it) && (!rainy || T >= 16 || !!it.rain)) || choose('bas', (it) => gOk(it) && fits(it));
+      o.gants = choose('gants', (it) => fits(it) && (!rainy || T >= 12 || !!it.rain)) || choose('gants', (it) => fits(it));
       o.chaussettes = choose('chaussettes', (it) => fits(it, 2));
       // Vérification de la tenue entière : haut (couches additionnées), bas et mains doivent couvrir T.
       const zones = [topRange(o.sous, o.haut, o.couche), o.bas && [o.bas.tmin, o.bas.tmax], o.gants && [o.gants.tmin, o.gants.tmax]].filter(Boolean);
@@ -729,7 +743,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       // Casque : Search en gravel ; ventilé (Prevail) quand il fait chaud ; aéro et plus chaud (Evade) quand il fait frais ou en Race.
       o.casque = choose('casque', (it) => outl ? it.model === 'Search'
         : it.model !== 'Search' && (T >= 18 ? /Prevail/.test(it.model) : (T < 12 || /race/.test(gam)) ? /Evade/.test(it.model) : true));
-      o.chaussures = choose('chaussures', (it) => T < 8 ? /Northwave/.test(it.brand) : (outl ? it.model === 'Urano' : it.model !== 'Urano' && !/Northwave/.test(it.brand)));
+      o.chaussures = choose('chaussures', (it) => (T < 8 || ($('rain').checked && T < 14)) ? /Northwave/.test(it.brand) : (outl ? it.model === 'Urano' : it.model !== 'Urano' && !/Northwave/.test(it.brand)));
       const kinds = [o.haut, o.couche, o.bas].filter(Boolean).map((it) => it.seasonKind);
       const mixed = true; // plus de contrainte ancien/nouveau : seuls température, gammes et garde-robe comptent
       const inGamme = [o.haut, o.bas].every((it) => !it || gOk(it));
@@ -754,6 +768,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   $('portant').addEventListener('change', () => { renderTabs(); renderGrid(); });
   for (const id of ['hide-couche', 'hide-jambieres']) $(id).addEventListener('change', () => render());
   $('surgants').addEventListener('change', () => renderLegend());
+  $('rain').addEventListener('change', () => renderLegend());
   $('gamme').addEventListener('click', (e) => {
     const b = e.target.closest('[data-g]'); if (!b) return;
     b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));

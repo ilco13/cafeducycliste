@@ -57,6 +57,21 @@ GAMME_BY_MODEL = {
 }
 GAMME_OF = {m: g for g, ms in GAMME_BY_MODEL.items() for m in ms}
 
+# Protection contre la pluie, d'après les fiches produits.
+WATERPROOF = {'Suzette', 'Alizee', 'Victoria', 'Extreme R GTX', 'Winter'}
+WATER_REPELLENT = {'Manon', 'Sibille', 'Marie', 'Elise', 'Adrienne', 'Laetitia', 'Lili', 'Lola', 'Softshell',
+                   'FS260 Thermo Bib Tights II', 'Alexia'}
+
+
+def rain_of(model):
+    first = model.split()[0]
+    if model in WATERPROOF or first in WATERPROOF:
+        return 'waterproof'
+    if model in WATER_REPELLENT or first in WATER_REPELLENT:
+        return 'dwr'
+    return None
+
+
 DEFAULT_TEMP = {'maillot_mc': (18, 30), 'maillot_ml': (8, 18), 'gilet': (8, 18), 'veste': (0, 12),
                 'veste_pluie': (2, 15), 'cuissard': (16, 35), 'short': (18, 30), 'collant': (0, 10), 'gants': (5, 20),
                 'chaussettes': (10, 30), 'sous_maillot': (5, 18), 'jambieres': (8, 16)}
@@ -308,6 +323,9 @@ def main():
         items.append({'id': iid, 'slot': 'chaussures', 'brand': brand, 'model': model, 'colour': colour, 'price': price,
                       'use': use, 'single': single, 'img': 'assets/' + iid + '.webp', 'w': w, 'h': h, 'url': url})
         print('ok', iid)
+
+    for it in items:
+        it['rain'] = rain_of(it['model'])
 
     # Poignets des vêtements à manches longues, pour accrocher les gants au bout des manches.
     for it in items:
