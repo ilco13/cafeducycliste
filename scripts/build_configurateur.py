@@ -63,6 +63,13 @@ EXTRA = [  # (id, modèle, coloris, image, prix €, saison, catégorie, gamme)
      'https://cdn.shopify.com/s/files/1/0561/3322/2572/files/B-JLS-CONSTA-M-NVCK_FR_1500X2000_ab3164b2-cb3a-4d3f-9fe7-668605ad98f0.jpg',
      180, 'Archive', 'maillot_ml', 'race'),
 ]
+# Pièces d'autres marques que possède l'utilisateur.
+EXTRA_OTHER = [  # (id, marque, modèle, coloris, image, catégorie, (tmin, tmax), usage)
+    ('endura-fs260-thermo-bib-tights-ii', 'Endura', 'FS260 Thermo Bib Tights II', 'Black',
+     'https://cdn.shopify.com/s/files/1/0957/9518/3923/files/R-E5079BK-B1-1.jpg', 'collant', (2, 10),
+     'Thermoroubaix, déperlant'),
+]
+
 EXTRA_HELMETS = [  # (id, modèle, coloris, image, usage)
     ('helmet-evade3-smoke', 'S-Works Evade 3', 'Smoke', 'https://www.balfesbikes.co.uk/images/products/2/27/275668-smk.jpg', 'Aéro'),
     ('helmet-evade3-black', 'S-Works Evade 3', 'Noir',
@@ -186,6 +193,14 @@ def main():
                       'colour': colour, 'price': float(price), 'gamme': gamme, 'season': season, 'seasonKind': 'old',
                       'tmin': tmin, 'tmax': tmax, 'kind': cat, 'img': 'assets/' + iid + '.webp', 'w': w, 'h': h,
                       'url': ''})
+        print('ok', iid)
+    for iid, brand, model, colour, url, cat, (tmin, tmax), use in EXTRA_OTHER:
+        im = cutout(fetch(url, iid + '.src'), remove_bg=True)
+        w, h = save(im, iid + '.webp')
+        items.append({'id': iid, 'slot': SLOT[cat], 'cat': cat, 'brand': brand, 'model': model, 'colour': colour,
+                      'price': None, 'gamme': '', 'season': '', 'seasonKind': '', 'tmin': tmin, 'tmax': tmax,
+                      'kind': 'collant' if cat == 'collant' else cat, 'use': use, 'img': 'assets/' + iid + '.webp',
+                      'w': w, 'h': h, 'url': ''})
         print('ok', iid)
     for iid, model, colour, url, use in EXTRA_HELMETS:
         im = trim_helmet_shadow(cutout(fetch(url, iid + '.src'), remove_bg=True, hard=True))

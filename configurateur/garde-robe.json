@@ -16,7 +16,8 @@
   "cycling-socks-aero-supersonic-white",
   "cycling-socks-aero-black-white",
   "unisex-socks-summer-motto-white-black",
-  "men-cycling-baselayer-judith-deep-water"
+  "men-cycling-baselayer-judith-deep-water",
+  "endura-fs260-thermo-bib-tights-ii"
  ],
  "wish": [
   "men-cycling-bibtight-marie2-carob",
@@ -26,7 +27,6 @@
   "unisex-cycling-socks-primaloft-khaki",
   "unisex-cycling-socks-primaloft-navy",
   "unisex-cycling-socks-primaloft-black",
-  "men-cycling-bibtight-rosie-navy",
   "carmen-b-bls-carmen-m-antc",
   "judith-b-bls-judith-m-antc",
   "manon-b-jth-manon-m-rven",
@@ -69,10 +69,10 @@
    "haut": "men-cycling-jersey-lydia-mountainfog",
    "sous": "judith-b-bls-judith-m-antc",
    "couche": "manon-b-jth-manon-m-rven",
-   "bas": "men-cycling-bibtight-rosie-navy",
+   "bas": "endura-fs260-thermo-bib-tights-ii",
    "gants": "unisex-cycling-gloves-softshell-black",
    "chaussettes": "unisex-cycling-socks-primaloft-navy",
-   "note": "Lydia, le plus épais de tes maillots, sous Manon : gris, graphite et marine. Sous 4 °C, prends les Winter Gloves (ou une 2ᵉ paire).",
+   "note": "Lydia, le plus épais de tes maillots, sous Manon : gris, graphite et noir. Sous 4 °C, prends les Winter Gloves (ou une 2ᵉ paire).",
    "casque": "helmet-evade3-black",
    "chaussures": "shoe-northwave-extreme-r-gtx"
   },
@@ -83,10 +83,10 @@
    "haut": "constance-navy-scots-pine",
    "sous": "men-cycling-baselayer-judith-deep-water",
    "couche": "men-cycling-jacket-edith-mountain-fog",
-   "bas": "men-cycling-bibtight-rosie-navy",
+   "bas": "endura-fs260-thermo-bib-tights-ii",
    "gants": "unisex-cycling-gloves-softshell-black",
    "chaussettes": "unisex-cycling-socks-primaloft-navy",
-   "note": "Edith se range en poche si ça se réchauffe. Marine sur marine, ton sur ton avec Judith.",
+   "note": "Edith se range en poche si ça se réchauffe. L'Endura noir laisse ressortir les bandes marine et vert.",
    "casque": "helmet-evade3-black",
    "chaussures": "shoe-northwave-extreme-r-gtx"
   },
