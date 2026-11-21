@@ -109,7 +109,8 @@ def colour_name(handle):
              'factory': 'Café Factory', 'red': 'Cinder Red', 'mariniere': 'Marinière', 'verbena': 'Verbena',
              'olive': 'Golden Olive', 'mustard': 'Mustard', 'fog': 'Fog', 'athracite': 'Anthracite',
              'mountainfog': 'Mountain Fog', 'scotspine': 'Scots Pine', 'brea': 'Café × Pain',
-             'grip': 'The Grip', 'nvbl': 'Navy / Black', 'vrbn': 'Verbena'}
+             'grip': 'The Grip', 'nvbl': 'Navy / Black', 'vrbn': 'Verbena',
+             'antc': 'Anthracite', 'rdmo': 'Red Moss', 'purp': 'Purple', 'pura': 'Purple Rain'}
     if c in names:
         return names[c]
     if re.fullmatch(r'cd[a-z]{2}', c):

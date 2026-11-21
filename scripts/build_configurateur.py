@@ -42,6 +42,21 @@ TEMP = {
     'Aero': (12, 35), 'Primaloft': (-5, 10), 'Nordic': (0, 12), 'Downy': (0, 12), 'Motto': (8, 25),
     'Suzette': (2, 20), 'Alizee': (2, 20), 'Ilona': (8, 18), 'Zelie': (-2, 8), 'Irisia': (8, 18),
 }
+# Gamme par modèle, pour les pièces que le site ne range dans aucune collection (anciennes ou permanentes).
+GAMME_BY_MODEL = {
+    'race': ['Angeline', 'Bergida', 'Vinciane', 'Olympe', 'Andrea', 'Constance', 'Roxane', 'Victoire', 'Cecile',
+             'Manon', 'Sibille', 'Cerise'],
+    'audax': ['Mona', 'Magda', 'Laure', 'Lorenne', 'Lydia', 'Ingrid', 'Emilie', 'Lise', 'Freida', 'Mathilde', 'Rosie',
+              'Eze', 'Ventoux', 'Paris', 'Sa'],
+    'classic': ['Laurette', 'Romy', 'Mireille', 'Fleurette', 'Francine', 'Tiphany', 'Charlie', 'Claudette', 'Marguerite',
+                'Corinne', 'Marinette', 'Graziella', 'Adrienne', 'Marie', 'Elise', 'Albane', 'Celine', 'Theresa',
+                'Edith', 'Lina', 'Norine', 'Suzette', 'Albertine', 'Alexia', 'Judith', 'Carmen', 'Coline', 'Liliane'],
+    'outlands': ['Barbara', 'Sandie', 'Sandrine', 'Giselle', 'Gladys', 'Perrine', 'Solange', 'Ivana', 'Apolline',
+                 'Faustine', 'Solenne', 'Sylvie', 'Pascaline', 'Eva', 'Elsa', 'Laetitia', 'Alizee', 'Ilona', 'Irisia'],
+    'explore': ['Alba', 'Cyrielle', 'Domitille'],
+}
+GAMME_OF = {m: g for g, ms in GAMME_BY_MODEL.items() for m in ms}
+
 DEFAULT_TEMP = {'maillot_mc': (18, 30), 'maillot_ml': (8, 18), 'gilet': (8, 18), 'veste': (0, 12),
                 'veste_pluie': (2, 15), 'cuissard': (16, 35), 'short': (18, 30), 'collant': (0, 10), 'gants': (5, 20),
                 'chaussettes': (10, 30), 'sous_maillot': (5, 18), 'jambieres': (8, 16)}
@@ -233,7 +248,7 @@ def main():
         items.append({
             'id': handle, 'slot': SLOT[r['categorie']], 'cat': r['categorie'], 'brand': 'Café du Cycliste',
             'model': r['modele'], 'colour': COLOURS.get(handle, colour_name(handle)), 'price': float(r['prix_eur']),
-            'gamme': r['gamme'] or '', 'season': slab, 'seasonKind': skind, 'tmin': tmin, 'tmax': tmax,
+            'gamme': r['gamme'] or GAMME_OF.get(r['modele'].split()[0], ''), 'season': slab, 'seasonKind': skind, 'tmin': tmin, 'tmax': tmax,
             'kind': bottom_kind(r) if SLOT[r['categorie']] == 'bas' else r['categorie'],
             'sleeves': ('none' if ('sleeveless' in handle or '-bsl-' in handle) else 'short' if r['modele'] == 'Liliane' else 'long')
             if r['categorie'] == 'sous_maillot' else None,

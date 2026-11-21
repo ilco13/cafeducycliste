@@ -83,6 +83,7 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: 26px; letter
 
 /* Portant */
 .rack { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 14px; min-width: 0; }
+.rack > * { min-width: 0; } /* les onglets défilent dans le panneau au lieu de l'élargir */
 .label { font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 6px; }
 .presets { display: flex; flex-wrap: wrap; gap: 6px; }
 .gchip { padding: 3px 6px; opacity: .55; }
@@ -97,7 +98,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .btn.ghost { background: transparent; color: var(--accent); }
 .btn:hover { filter: brightness(1.08); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.filters { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: end; }
+.filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: end; }
 @media (max-width: 640px) { .filters { grid-template-columns: minmax(0, 1fr); } }
 .temp-row { display: flex; align-items: center; gap: 10px; }
 .temp-row input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
@@ -201,19 +202,11 @@ details.tune summary { cursor: pointer; font-weight: 600; }
           <button type="button" class="chip gchip" data-g="outlands" aria-pressed="false"><span class="gm outlands">Outlands</span></button>
         </div>
       </div>
-      <div>
-        <p class="label"><label for="saison">Collection</label></p>
-        <select id="saison">
-          <option value="">Toutes</option>
-          <option value="actuel">Actuelle (SS26, AW26, permanent)</option>
-          <option value="ancien">Anciennes (AW25, SS25, archive)</option>
-        </select>
-      </div>
     </div>
 
     <div class="actions">
       <button class="btn" id="random" type="button">Tenue aléatoire cohérente</button>
-      <label class="toggle"><input type="checkbox" id="mix" checked> Mélanger ancien et nouveau</label>
+      <label class="toggle" id="random-own-wrap" hidden><input type="checkbox" id="random-own" checked> Avec ma garde-robe</label>
       <button class="btn ghost" id="copy" type="button">Copier la liste</button>
     </div>
 
@@ -558,12 +551,11 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   // vrai si aucune gamme n'est choisie, si la pièce n'a pas de gamme, ou si elle appartient à l'une des gammes choisies
   const gammeOk = (it, gs) => !gs.length || !it.gamme || it.gamme.split('/').some((x) => gs.includes(x));
   function visible(slot) {
-    const T = tempNow(), filt = $('temp-filter').checked, g = gammes(), sm = $('saison').value;
+    const T = tempNow(), filt = $('temp-filter').checked, g = gammes();
     return DATA.items.filter((it) => it.slot === slot
       // un maillot se porte aussi plus froid sous une veste : marge plus large vers le bas
       && (!filt || it.tmin == null || (T >= it.tmin - (slot === 'haut' ? 8 : 2) && T <= it.tmax + 2))
       && (gammeOk(it, g) || !['haut', 'couche', 'bas'].includes(slot))
-      && seasonOk(it, sm)
       && wardOk(it));
   }
   function wardOk(it) {
@@ -685,33 +677,51 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   }
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   function randomOutfit() {
-    const T = tempNow(), g = gammes(), sm = $('saison').value, mix = $('mix').checked && !sm;
-    const fits = (it) => T >= it.tmin - 1 && T <= it.tmax + 1;
-    const pool = (slot) => DATA.items.filter((it) => it.slot === slot && fits(it) && (gammeOk(it, g) || slot === 'gants') && seasonOk(it, sm));
-    for (let attempt = 0; attempt < 40; attempt++) {
-      const o = {};
-      let tops = pool('haut');
-      if (!tops.length) tops = DATA.items.filter((it) => it.slot === 'haut' && it.tmin <= T + 4);
-      o.haut = pick(tops);
-      const needLayer = T < 10 || (T < 16 && Math.random() < 0.5);
-      if (needLayer) {
-        const ls = DATA.items.filter((it) => it.slot === 'couche' && T >= it.tmin - 2 && T <= it.tmax + 2 && seasonOk(it, sm));
-        o.couche = ls.length ? pick(ls) : null;
+    // Tirage d'une tenue cohérente pour la température choisie, dans les gammes sélectionnées,
+    // éventuellement limitée à ma garde-robe, en mélangeant toujours ancien et nouveau quand c'est possible.
+    const T = tempNow(), g = gammes();
+    const own = !$('random-own-wrap').hidden && $('random-own').checked;
+    const mine = (it) => !own || ownSet.has(it.id);
+    const fits = (it, m = 1) => it.tmin == null || (T >= it.tmin - m && T <= it.tmax + m);
+    const gOk = (it) => gammeOk(it, g);
+    const choose = (slot, test) => {
+      const all = DATA.items.filter((it) => it.slot === slot);
+      // Ordre de préférence : ma pièce qui convient ; ma pièce à la bonne température (hors gamme) ;
+      // une pièce du catalogue qui convient ; ma pièce approchante. Casque et chaussures n'ont pas de plage.
+      const wear = !['casque', 'chaussures'].includes(slot);
+      const tries = [(it) => mine(it) && test(it)];
+      if (wear) tries.push((it) => mine(it) && fits(it));
+      tries.push((it) => test(it));
+      if (wear) tries.push((it) => mine(it) && fits(it, 4));
+      for (const f of tries) {
+        const l = all.filter(f); if (l.length) return pick(l);
       }
-      const bs = pool('bas'); o.bas = bs.length ? pick(bs) : pick(DATA.items.filter((it) => it.slot === 'bas'));
-      const gs = DATA.items.filter((it) => it.slot === 'gants' && fits(it)); o.gants = gs.length ? pick(gs) : null;
-      const gam = (o.haut.gamme || '') + (o.bas.gamme || '');
+      return null;
+    };
+    let best = null;
+    for (let attempt = 0; attempt < 60; attempt++) {
+      const o = {};
+      o.haut = choose('haut', (it) => fits(it) || (T < it.tmin && T >= it.tmin - 8 && it.cat === 'maillot_ml')) ;
+      if (o.haut && !gOk(o.haut)) { const alt = choose('haut', (it) => gOk(it) && (fits(it) || (T < it.tmin && T >= it.tmin - 8 && it.cat === 'maillot_ml'))); if (alt) o.haut = alt; }
+      if (T < 14) o.sous = choose('sous', (it) => it.sleeves === 'long' && fits(it, 2));
+      const needLayer = T < 10 || (T < 16 && Math.random() < 0.5);
+      if (needLayer) o.couche = choose('couche', (it) => gOk(it) && fits(it, 2));
+      o.bas = choose('bas', (it) => gOk(it) && fits(it));
+      o.gants = choose('gants', (it) => fits(it));
+      o.chaussettes = choose('chaussettes', (it) => fits(it, 2));
+      const gam = [o.haut, o.bas].filter(Boolean).map((it) => it.gamme || '').join(' ');
       const outl = /outlands/.test(gam);
-      const hs = DATA.items.filter((it) => it.slot === 'casque' && (outl ? it.model === 'Search' : it.model !== 'Search' && (/race/.test(gam) ? /S-Works/.test(it.model) : true)));
-      o.casque = pick(hs);
-      const ss = DATA.items.filter((it) => it.slot === 'chaussures' && (outl ? it.model === 'Urano' : it.model !== 'Urano'));
-      o.chaussures = pick(ss);
+      o.casque = choose('casque', (it) => (outl ? it.model === 'Search' : it.model !== 'Search'));
+      o.chaussures = choose('chaussures', (it) => T < 8 ? /Northwave/.test(it.brand) : (outl ? it.model === 'Urano' : it.model !== 'Urano' && !/Northwave/.test(it.brand)));
       const kinds = [o.haut, o.couche, o.bas].filter(Boolean).map((it) => it.seasonKind);
-      if (mix && !(kinds.includes('old') && kinds.some((k) => k !== 'old')) && attempt < 39) continue;
-      state.presetId = null;
-      for (const s of SLOTS) state.outfit[s.key] = o[s.key] ? o[s.key].id : null;
-      return;
+      const mixed = kinds.includes('old') && kinds.some((k) => k !== 'old');
+      const inGamme = [o.haut, o.bas].every((it) => !it || gOk(it));
+      best = best || o;
+      if (!(mixed && inGamme) && attempt < 59) { if (inGamme) best = o; continue; }
+      best = o; break;
     }
+    state.presetId = null;
+    for (const s of SLOTS) state.outfit[s.key] = best[s.key] ? best[s.key].id : null;
   }
   function updateTempLabel() { $('temp-val').textContent = `${$('temp').value} °C`; }
 
@@ -733,7 +743,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     renderTabs(); renderGrid();
   });
   $('temp').addEventListener('input', () => { updateTempLabel(); renderTabs(); renderGrid(); renderLegend(); persist(); });
-  for (const id of ['temp-filter', 'gamme', 'saison']) $(id).addEventListener('change', () => { renderTabs(); renderGrid(); });
+  for (const id of ['temp-filter']) $(id).addEventListener('change', () => { renderTabs(); renderGrid(); });
   $('random').addEventListener('click', () => { randomOutfit(); refresh(); });
   $('copy').addEventListener('click', () => {
     const lines = SLOTS.map((s) => { const it = byId.get(state.outfit[s.key]); return it ? `${s.label} : ${itemTitle(it)}${it.colour ? ' — ' + it.colour : ''} (${fmtPrice(it.price)})` : null; }).filter(Boolean);
@@ -760,7 +770,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     if (w) {
       WARD = w;
       w.owned.forEach((id) => ownSet.add(id)); w.wish.forEach((id) => wishSet.add(id));
-      $('my-block').hidden = false; $('wardrobe-filter').hidden = false;
+      $('my-block').hidden = false; $('wardrobe-filter').hidden = false; $('random-own-wrap').hidden = false;
     }
     for (const it of d.items) byId.set(it.id, it);
     if (saved.temp != null) $('temp').value = saved.temp;
