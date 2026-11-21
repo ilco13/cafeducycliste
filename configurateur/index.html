@@ -1,0 +1,554 @@
+<title>Cabine d'essayage CdC</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : une cabine d'essayage. À gauche le mannequin à l'échelle (règle en cm) ; à droite le portant (onglets par poste, filtres, vignettes). */
+:root {
+  --bg: #eceef0;
+  --panel: #f8f9fa;
+  --stage: #e3e6e9;
+  --stage-floor: #d5d9dd;
+  --fg: #1b2430;
+  --muted: #5d6874;
+  --line: #cdd3d9;
+  --accent: #23507d;
+  --accent-soft: #dbe6f1;
+  --new: #b4532a;
+  --old: #2e5f86;
+  --perm: #6b737c;
+  --warn: #a4471d;
+  --ok: #2f6b47;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15191e; --panel: #1d232a; --stage: #262c33; --stage-floor: #20262c; --fg: #e8ecf0; --muted: #9aa5b1;
+    --line: #353e48; --accent: #8bb6e0; --accent-soft: #233446; --new: #e08a63; --old: #79a9d3; --perm: #9aa3ad;
+    --warn: #e59a73; --ok: #7cc39a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15191e; --panel: #1d232a; --stage: #262c33; --stage-floor: #20262c; --fg: #e8ecf0; --muted: #9aa5b1;
+  --line: #353e48; --accent: #8bb6e0; --accent-soft: #233446; --new: #e08a63; --old: #79a9d3; --perm: #9aa3ad;
+  --warn: #e59a73; --ok: #7cc39a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 32px;
+}
+header.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; max-width: 1320px; margin: 0 auto 16px; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: 26px; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 0; }
+.app { display: grid; grid-template-columns: minmax(300px, 460px) minmax(0, 1fr); gap: 20px; max-width: 1320px; margin: 0 auto; align-items: start; }
+@media (max-width: 860px) { .app { grid-template-columns: minmax(0, 1fr); } }
+
+/* Scène */
+.stage-wrap { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 12px; }
+@media (max-width: 860px) { .stage-wrap { position: static; } }
+.stage { background: linear-gradient(180deg, var(--stage) 0%, var(--stage) 78%, var(--stage-floor) 100%); border-radius: 10px; position: relative; overflow: hidden; }
+#cv { display: block; width: 100%; height: auto; aspect-ratio: 120 / 192; max-width: 100%; }
+.stage-badge { position: absolute; left: 12px; top: 10px; font-family: var(--font-data); font-size: 11px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.check { display: flex; gap: 8px; align-items: center; padding: 8px 12px; border-radius: 8px; font-weight: 500; }
+.check.ok { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
+.check.warn { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); }
+.check .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex: none; }
+
+.legend { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 6px; }
+.legend-row { display: grid; grid-template-columns: 82px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; }
+.legend-row .slot { font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.legend-row .name { min-width: 0; overflow-wrap: anywhere; }
+.legend-row .price { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.legend-total { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 8px; display: flex; justify-content: space-between; font-weight: 600; }
+.legend-total span:last-child { font-family: var(--font-data); }
+.pill { display: inline-block; font-size: 11px; font-weight: 600; color: #fff; border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: 1px; white-space: nowrap; }
+.pill.new { background: var(--new); } .pill.old { background: var(--old); } .pill.perm { background: var(--perm); }
+:root[data-theme="dark"] .pill, :root:not([data-theme="light"]) .pill { color: var(--bg); }
+:root[data-theme="light"] .pill { color: #fff; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .pill { color: #fff; } }
+
+/* Portant */
+.rack { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 14px; min-width: 0; }
+.label { font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 6px; }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 5px 11px; font-size: 13px; }
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+.btn { border: 1px solid var(--accent); background: var(--accent); color: var(--panel); border-radius: 8px; padding: 8px 14px; font-weight: 600; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn:hover { filter: brightness(1.08); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.filters { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: end; }
+@media (max-width: 640px) { .filters { grid-template-columns: minmax(0, 1fr); } }
+.temp-row { display: flex; align-items: center; gap: 10px; }
+.temp-row input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
+.temp-val { font-family: var(--font-data); font-size: 15px; min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; }
+select { font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 8px; width: 100%; }
+.toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { border: 0; background: transparent; padding: 8px 12px; border-bottom: 2px solid transparent; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.tab .count { font-family: var(--font-data); font-size: 11px; font-weight: 400; margin-left: 4px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; max-height: 560px; overflow-y: auto; padding: 2px; }
+.card { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 6px; text-align: left; display: grid; gap: 4px; align-content: start; }
+.card:hover { border-color: var(--accent); }
+.card[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft) inset, 0 0 0 1px var(--accent); }
+.card .ph { aspect-ratio: 1 / 1; display: grid; place-items: center; background: var(--stage); border-radius: 6px; overflow: hidden; }
+.card img { max-height: 92%; max-width: 92%; object-fit: contain; }
+.card .t { font-size: 12px; font-weight: 600; line-height: 1.25; }
+.card .m { font-size: 11px; color: var(--muted); line-height: 1.25; }
+.card .m .pill { margin-left: 0; margin-top: 2px; }
+.none-card { place-items: center; color: var(--muted); font-size: 12px; min-height: 120px; }
+.empty { color: var(--muted); padding: 16px 4px; }
+
+details.tune { border-top: 1px solid var(--line); padding-top: 10px; }
+details.tune summary { cursor: pointer; font-weight: 600; }
+.tune-grid { display: grid; grid-template-columns: 110px minmax(0, 1fr) 52px; gap: 6px 10px; align-items: center; margin-top: 10px; }
+.tune-grid input { accent-color: var(--accent); width: 100%; }
+.tune-grid output { font-family: var(--font-data); font-size: 12px; text-align: right; }
+.note { color: var(--muted); font-size: 12px; margin: 0; max-width: 70ch; }
+@media (prefers-reduced-motion: no-preference) { .card, .chip, .tab { transition: border-color .15s, background-color .15s; } }
+</style>
+
+<header class="top">
+  <div>
+    <h1>Cabine d'essayage Café du Cycliste</h1>
+    <p class="sub">Mannequin homme 1,80 m · casques Specialized · chaussures NIMBL</p>
+  </div>
+  <p class="note">Superposition des packshots officiels sur un mannequin à l'échelle. Le rendu montre la silhouette et les couleurs, pas le tombé réel du tissu.</p>
+</header>
+
+<main class="app">
+  <section class="stage-wrap" aria-label="Mannequin">
+    <div class="stage">
+      <span class="stage-badge">Mannequin H · 180 cm</span>
+      <canvas id="cv" width="600" height="960" role="img" aria-label="Mannequin habillé avec la tenue sélectionnée"></canvas>
+    </div>
+    <div id="check" class="check ok" role="status"><span class="dot"></span><span id="check-text">Chargement…</span></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section class="rack" aria-label="Choix des pièces">
+    <div>
+      <p class="label">Tenues prêtes</p>
+      <div class="presets" id="presets"></div>
+    </div>
+
+    <div class="filters">
+      <div>
+        <p class="label"><label for="temp">Température de la sortie</label></p>
+        <div class="temp-row">
+          <input type="range" id="temp" min="-5" max="35" step="1" value="18">
+          <span class="temp-val" id="temp-val">18 °C</span>
+        </div>
+        <label class="toggle"><input type="checkbox" id="temp-filter" checked> Filtrer le portant sur cette température</label>
+      </div>
+      <div>
+        <p class="label"><label for="gamme">Gamme</label></p>
+        <select id="gamme">
+          <option value="">Toutes</option>
+          <option value="race">Race</option>
+          <option value="audax">Audax</option>
+          <option value="classic">Classic</option>
+          <option value="outlands">Outlands</option>
+        </select>
+      </div>
+      <div>
+        <p class="label"><label for="saison">Collection</label></p>
+        <select id="saison">
+          <option value="">Toutes</option>
+          <option value="actuel">Actuelle (SS26, AW26, permanent)</option>
+          <option value="ancien">Anciennes (AW25, SS25, archive)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="random" type="button">Tenue aléatoire cohérente</button>
+      <label class="toggle"><input type="checkbox" id="mix" checked> Mélanger ancien et nouveau</label>
+      <button class="btn ghost" id="copy" type="button">Copier la liste</button>
+    </div>
+
+    <div>
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <div class="grid" id="grid" role="tabpanel"></div>
+    </div>
+
+    <details class="tune" id="tune">
+      <summary>Ajuster la pièce sélectionnée sur le mannequin</summary>
+      <div class="tune-grid">
+        <label for="t-scale">Taille</label><input type="range" id="t-scale" min="70" max="130" step="1" value="100"><output id="o-scale">100 %</output>
+        <label for="t-y">Hauteur</label><input type="range" id="t-y" min="-15" max="15" step="0.5" value="0"><output id="o-y">0 cm</output>
+        <label for="t-x">Décalage</label><input type="range" id="t-x" min="-10" max="10" step="0.5" value="0"><output id="o-x">0 cm</output>
+      </div>
+      <p class="note" style="margin-top:8px">Le réglage est mémorisé pour cette pièce dans ce navigateur. <button class="chip" id="t-reset" type="button">Réinitialiser</button></p>
+    </details>
+  </section>
+</main>
+
+<script>
+(() => {
+  const SLOTS = [
+    { key: 'haut', label: 'Maillot' },
+    { key: 'couche', label: 'Veste / gilet', optional: true },
+    { key: 'bas', label: 'Cuissard / collant' },
+    { key: 'gants', label: 'Gants' },
+    { key: 'casque', label: 'Casque' },
+    { key: 'chaussures', label: 'Chaussures' },
+  ];
+  // Repères du mannequin, en cm depuis le sommet du crâne (homme 180 cm).
+  const M = {
+    W: 120, H: 192, top: 6,
+    headCy: 12, headRx: 8, headRy: 11.5,
+    shoulderY: 29, shoulderX: 21, armAngle: 14 * Math.PI / 180,
+    upperArm: 31, foreArm: 27, hand: 18,
+  };
+  const STORE_KEY = 'cdc-cabine-v1';
+  const store = {
+    get() { try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; } },
+    set(v) { try { localStorage.setItem(STORE_KEY, JSON.stringify(v)); } catch {} },
+  };
+  const saved = store.get();
+  const tweaks = saved.tweaks || {};
+
+  let DATA = null;
+  const byId = new Map();
+  const imgs = new Map();
+  const state = { outfit: {}, tab: 'haut', presetId: null };
+
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const $ = (id) => document.getElementById(id);
+  const fmtPrice = (p) => p == null ? '—' : `${Math.round(p)} €`;
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  function loadImg(item) {
+    if (imgs.has(item.id)) return imgs.get(item.id);
+    const p = new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = item.img; });
+    imgs.set(item.id, p);
+    return p;
+  }
+
+  // ---------- Dessin du mannequin
+  function armPoints(side) {
+    const sx = side * M.shoulderX, sy = M.shoulderY + 2;
+    const dx = Math.sin(M.armAngle) * side, dy = Math.cos(M.armAngle);
+    const elbow = [sx + dx * M.upperArm, sy + dy * M.upperArm];
+    const wrist = [elbow[0] + dx * M.foreArm, elbow[1] + dy * M.foreArm];
+    const hand = [wrist[0] + dx * M.hand * 0.5, wrist[1] + dy * M.hand * 0.5];
+    return { shoulder: [sx, sy], elbow, wrist, hand, dx, dy };
+  }
+  function limb(c, pts, widths) {
+    // Membre effilé : suite de points avec une demi-largeur à chaque point.
+    const left = [], right = [];
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
+      let nx = -(b[1] - a[1]), ny = b[0] - a[0];
+      const n = Math.hypot(nx, ny) || 1; nx /= n; ny /= n;
+      left.push([pts[i][0] + nx * widths[i], pts[i][1] + ny * widths[i]]);
+      right.push([pts[i][0] - nx * widths[i], pts[i][1] - ny * widths[i]]);
+    }
+    c.beginPath();
+    c.moveTo(...left[0]);
+    for (let i = 1; i < left.length; i++) c.lineTo(...left[i]);
+    const e = pts[pts.length - 1], w = widths[widths.length - 1];
+    const ang = Math.atan2(right[right.length - 1][1] - e[1], right[right.length - 1][0] - e[0]);
+    c.arc(e[0], e[1], w, ang + Math.PI, ang, true);
+    for (let i = right.length - 1; i >= 0; i--) c.lineTo(...right[i]);
+    c.closePath();
+  }
+  function drawMannequin(c) {
+    const skin = c.createLinearGradient(-30, 0, 30, 0);
+    skin.addColorStop(0, '#e4e6ea'); skin.addColorStop(0.35, '#fbfbfc'); skin.addColorStop(0.65, '#ffffff'); skin.addColorStop(1, '#dfe2e6');
+    c.fillStyle = skin; c.strokeStyle = 'rgba(40,50,60,0.18)'; c.lineWidth = 0.35;
+    // Ombre au sol
+    const g = c.createRadialGradient(0, 181, 2, 0, 181, 26);
+    g.addColorStop(0, 'rgba(0,0,0,0.22)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = g; c.beginPath(); c.ellipse(0, 181, 26, 3.2, 0, 0, Math.PI * 2); c.fill();
+    c.fillStyle = skin;
+    // Jambes
+    for (const s of [-1, 1]) {
+      c.beginPath();
+      c.moveTo(s * 17.5, 86); c.bezierCurveTo(s * 18.5, 104, s * 13.5, 120, s * 11.2, 132);
+      c.bezierCurveTo(s * 11.5, 146, s * 8.6, 160, s * 6.4, 172);
+      c.lineTo(s * 2.4, 172); c.bezierCurveTo(s * 2.6, 160, s * 3.6, 145, s * 3.0, 132);
+      c.bezierCurveTo(s * 2.8, 118, s * 1.6, 104, s * 0.6, 93); c.lineTo(0, 93); c.closePath();
+      c.fill(); c.stroke();
+      // Pieds
+      c.beginPath(); c.ellipse(s * 4.6, 177, 4.4, 4.6, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+    }
+    // Bras
+    for (const s of [-1, 1]) {
+      const a = armPoints(s);
+      limb(c, [a.shoulder, a.elbow, a.wrist], [5.6, 4.0, 2.9]); c.fill(); c.stroke();
+      c.save(); c.translate(...a.hand); c.rotate(-s * M.armAngle);
+      c.beginPath(); c.ellipse(0, 1.5, 3.6, 8.2, 0, 0, Math.PI * 2); c.fill(); c.stroke(); c.restore();
+    }
+    // Torse
+    c.beginPath();
+    c.moveTo(-5.6, 24);
+    c.bezierCurveTo(-9, 27.5, -17, 26.5, -21.5, 29.5);
+    c.bezierCurveTo(-25, 32, -23, 40, -18.5, 46);
+    c.bezierCurveTo(-16, 56, -14.2, 63, -14.4, 69);
+    c.bezierCurveTo(-15.2, 76, -18, 81, -17.6, 87);
+    c.bezierCurveTo(-12, 93, -4, 95, 0, 95);
+    c.bezierCurveTo(4, 95, 12, 93, 17.6, 87);
+    c.bezierCurveTo(18, 81, 15.2, 76, 14.4, 69);
+    c.bezierCurveTo(14.2, 63, 16, 56, 18.5, 46);
+    c.bezierCurveTo(23, 40, 25, 32, 21.5, 29.5);
+    c.bezierCurveTo(17, 26.5, 9, 27.5, 5.6, 24);
+    c.closePath(); c.fill(); c.stroke();
+    // Cou et tête
+    c.beginPath(); c.moveTo(-4.6, 19); c.lineTo(-5.4, 26); c.lineTo(5.4, 26); c.lineTo(4.6, 19); c.closePath(); c.fill(); c.stroke();
+    c.beginPath(); c.ellipse(0, M.headCy, M.headRx, M.headRy, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+    // Lignes de mannequin (jointures)
+    c.strokeStyle = 'rgba(40,50,60,0.12)'; c.lineWidth = 0.3;
+    c.beginPath(); c.moveTo(-14.4, 69); c.quadraticCurveTo(0, 71.5, 14.4, 69); c.stroke();
+    for (const s of [-1, 1]) { c.beginPath(); c.ellipse(s * 7.3, 132, 4.5, 0.9, 0, 0, Math.PI * 2); c.stroke(); }
+  }
+  function drawRuler(c) {
+    c.save();
+    c.strokeStyle = css('--muted'); c.fillStyle = css('--muted'); c.lineWidth = 0.18;
+    c.font = `2.3px ${css('--font-data') || 'monospace'}`; c.textAlign = 'left'; c.textBaseline = 'middle';
+    const x = -55;
+    c.beginPath(); c.moveTo(x, 0); c.lineTo(x, 180); c.stroke();
+    for (let cm = 0; cm <= 180; cm += 10) {
+      const y = 180 - cm;
+      c.beginPath(); c.moveTo(x, y); c.lineTo(x + (cm % 50 === 0 ? 2.6 : 1.4), y); c.stroke();
+      if (cm % 30 === 0) c.fillText(`${cm}`, x + 3.2, y);
+    }
+    c.restore();
+  }
+
+  // ---------- Placement des pièces (en cm)
+  function placement(item, im) {
+    const ar = im.width / im.height;
+    let h, cx = 0, top, rot = 0, mirror = false;
+    switch (item.slot) {
+      case 'haut': top = 24.5; h = item.cat === 'maillot_ml' ? 67 : 64; break;
+      case 'couche': top = 23.5; h = item.cat === 'gilet' ? 66 : 70; break;
+      case 'bas': { top = 29.5; const bottom = item.kind === 'collant' ? 174 : item.kind === '3/4' ? 150 : 121; h = bottom - top; break; }
+      case 'casque': { const w = 31; h = w / ar; top = -3.5; break; }
+      case 'chaussures': { const w = 44; h = w / ar; top = 182 - h; break; }
+      default: break;
+    }
+    const t = tweaks[item.id] || {};
+    const k = (t.s || 100) / 100;
+    if (item.slot === 'gants') return { glove: true, h: (/summer/i.test(item.model) ? 15 : 21) * k, ar, dx: t.x || 0, dy: t.y || 0 };
+    const H = h * k, W = H * ar;
+    return { x: cx - W / 2 + (t.x || 0), y: top + (t.y || 0) - (H - h) / 2 * (item.slot === 'bas' ? 0 : 1), w: W, h: H, rot, mirror };
+  }
+
+  async function render() {
+    const rect = cv.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    const pxW = Math.max(300, Math.round(rect.width * dpr));
+    const pxH = Math.round(pxW * M.H / M.W);
+    if (cv.width !== pxW || cv.height !== pxH) { cv.width = pxW; cv.height = pxH; }
+    const order = ['bas', 'haut', 'couche', 'chaussures', 'gants', 'casque'];
+    const loaded = {};
+    await Promise.all(order.map(async (s) => { const it = byId.get(state.outfit[s]); if (it) loaded[s] = [it, await loadImg(it)]; }));
+    const c = ctx;
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.clearRect(0, 0, cv.width, cv.height);
+    const k = cv.width / M.W;
+    c.setTransform(k, 0, 0, k, cv.width / 2, M.top * k);
+    c.imageSmoothingQuality = 'high';
+    drawRuler(c);
+    drawMannequin(c);
+    for (const s of order) {
+      const pair = loaded[s]; if (!pair || !pair[1]) continue;
+      const [it, im] = pair; const p = placement(it, im);
+      c.save();
+      c.shadowColor = 'rgba(0,0,0,0.18)'; c.shadowBlur = 1.2 * k; c.shadowOffsetY = 0.4 * k;
+      if (p.glove) {
+        for (const side of [-1, 1]) {
+          const a = armPoints(side);
+          c.save();
+          c.translate(a.hand[0] + side * p.dx, a.hand[1] + 1.5 + p.dy);
+          c.rotate(Math.PI - side * M.armAngle);
+          if (side === 1) c.scale(-1, 1);
+          const w = p.h * p.ar;
+          c.drawImage(im, -w / 2, -p.h / 2, w, p.h);
+          c.restore();
+        }
+      } else {
+        c.drawImage(im, p.x, p.y, p.w, p.h);
+      }
+      c.restore();
+    }
+  }
+
+  // ---------- Filtres, cohérence
+  const tempNow = () => Number($('temp').value);
+  function seasonOk(it, mode) {
+    if (!mode || !it.seasonKind) return true;
+    return mode === 'ancien' ? it.seasonKind === 'old' : it.seasonKind !== 'old';
+  }
+  function visible(slot) {
+    const T = tempNow(), filt = $('temp-filter').checked, g = $('gamme').value, sm = $('saison').value;
+    return DATA.items.filter((it) => it.slot === slot
+      && (!filt || it.tmin == null || (T >= it.tmin - 2 && T <= it.tmax + 2))
+      && (!g || !it.gamme || it.gamme.split('/').includes(g) || !['haut', 'couche', 'bas'].includes(slot))
+      && seasonOk(it, sm));
+  }
+  function coherence() {
+    const parts = ['haut', 'bas', 'gants', 'couche'].map((s) => byId.get(state.outfit[s])).filter(Boolean);
+    if (!parts.length) return { ok: true, text: 'Choisissez des pièces.' };
+    let lo = -99, hi = 99;
+    // La couche extérieure abaisse la plage du haut : on la combine au maillot.
+    const top = byId.get(state.outfit.haut), layer = byId.get(state.outfit.couche);
+    const ranges = [];
+    if (top && layer) ranges.push([Math.min(top.tmin, layer.tmin), Math.min(top.tmax, layer.tmax), `${top.model} + ${layer.model}`]);
+    else if (top) ranges.push([top.tmin, top.tmax, top.model]);
+    else if (layer) ranges.push([layer.tmin, layer.tmax, layer.model]);
+    for (const s of ['bas', 'gants']) { const it = byId.get(state.outfit[s]); if (it) ranges.push([it.tmin, it.tmax, it.model]); }
+    for (const [a, b] of ranges) { lo = Math.max(lo, a); hi = Math.min(hi, b); }
+    const T = tempNow();
+    if (lo > hi) {
+      const desc = ranges.map(([a, b, n]) => `${n} ${a}–${b} °C`).join(' · ');
+      return { ok: false, text: `Plages incompatibles : ${desc}` };
+    }
+    const inT = T >= lo - 2 && T <= hi + 2;
+    return { ok: inT, text: inT ? `Tenue cohérente de ${lo} à ${hi} °C (estimation)` : `Tenue prévue pour ${lo}–${hi} °C, pas pour ${T} °C` };
+  }
+
+  // ---------- Interface
+  function pill(it) { return it.season ? `<span class="pill ${it.seasonKind}">${it.season}</span>` : ''; }
+  function itemTitle(it) { return it.brand === 'Café du Cycliste' ? it.model : `${it.brand} ${it.model}`; }
+  function renderLegend() {
+    let total = 0;
+    const rows = SLOTS.map((s) => {
+      const it = byId.get(state.outfit[s.key]);
+      if (!it) return s.optional ? '' : `<div class="legend-row"><span class="slot">${s.label}</span><span class="name" style="color:var(--muted)">—</span><span></span></div>`;
+      if (it.brand === 'Café du Cycliste') total += it.price || 0;
+      const extra = it.tmin != null ? ` <span style="color:var(--muted);font-family:var(--font-data);font-size:11px">${it.tmin}–${it.tmax} °C</span>` : (it.use ? ` <span style="color:var(--muted);font-size:12px">${it.use}</span>` : '');
+      return `<div class="legend-row"><span class="slot">${s.label}</span><span class="name">${itemTitle(it)}${it.colour ? ' — ' + it.colour : ''}${pill(it)}${extra}</span><span class="price">${fmtPrice(it.price)}</span></div>`;
+    }).join('');
+    $('legend').innerHTML = rows + `<div class="legend-total"><span>Total textile Café du Cycliste</span><span>${Math.round(total)} €</span></div>`;
+    const ch = coherence();
+    $('check').className = 'check ' + (ch.ok ? 'ok' : 'warn');
+    $('check-text').textContent = ch.text;
+  }
+  function renderTabs() {
+    $('tabs').innerHTML = SLOTS.map((s) => `<button class="tab" role="tab" type="button" id="tab-${s.key}" aria-selected="${state.tab === s.key}" data-tab="${s.key}">${s.label}<span class="count">${visible(s.key).length}</span></button>`).join('');
+  }
+  function renderGrid() {
+    const list = visible(state.tab);
+    const slot = SLOTS.find((s) => s.key === state.tab);
+    const cur = state.outfit[state.tab];
+    let html = slot.optional ? `<button type="button" class="card none-card" data-id="" aria-pressed="${!cur}">Aucune</button>` : '';
+    html += list.map((it) => `<button type="button" class="card" data-id="${it.id}" aria-pressed="${it.id === cur}">
+      <span class="ph"><img loading="lazy" src="${it.img}" alt=""></span>
+      <span class="t">${itemTitle(it)}</span>
+      <span class="m">${it.colour || it.use || ''}${it.price ? ' · ' + fmtPrice(it.price) : ''}${it.season ? '<br>' + pill(it) : ''}</span>
+    </button>`).join('');
+    if (!list.length) html += `<p class="empty">Aucune pièce ne correspond à ces filtres. Élargissez la température ou la gamme.</p>`;
+    $('grid').innerHTML = html;
+  }
+  function renderPresets() {
+    $('presets').innerHTML = DATA.presets.map((p) => `<button type="button" class="chip" data-preset="${p.id}" aria-pressed="${state.presetId === p.id}" title="${p.temp} · ${p.gamme}">${p.name}</button>`).join('');
+  }
+  function syncTune() {
+    const it = byId.get(state.outfit[state.tab]);
+    const t = (it && tweaks[it.id]) || {};
+    $('t-scale').value = t.s || 100; $('t-y').value = t.y || 0; $('t-x').value = t.x || 0;
+    $('o-scale').textContent = `${t.s || 100} %`; $('o-y').textContent = `${t.y || 0} cm`; $('o-x').textContent = `${t.x || 0} cm`;
+    $('tune').querySelector('summary').textContent = it ? `Ajuster « ${itemTitle(it)} » sur le mannequin` : 'Ajuster la pièce sélectionnée sur le mannequin';
+  }
+  function persist() { store.set({ tweaks, outfit: state.outfit, temp: tempNow() }); }
+  function refresh(all = true) {
+    if (all) { renderTabs(); renderGrid(); renderPresets(); }
+    renderLegend(); syncTune(); render(); persist();
+  }
+
+  function applyPreset(p) {
+    state.presetId = p.id;
+    for (const s of SLOTS) state.outfit[s.key] = p[s.key] && byId.has(p[s.key]) ? p[s.key] : null;
+    const m = String(p.temp).match(/-?\d+/g);
+    if (m) { const nums = m.map(Number); $('temp').value = p.temp.includes('>') ? nums[0] + 3 : Math.round(nums.reduce((a, b) => a + b, 0) / nums.length); updateTempLabel(); }
+    refresh();
+  }
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  function randomOutfit() {
+    const T = tempNow(), g = $('gamme').value, sm = $('saison').value, mix = $('mix').checked && !sm;
+    const fits = (it) => T >= it.tmin - 1 && T <= it.tmax + 1;
+    const pool = (slot) => DATA.items.filter((it) => it.slot === slot && fits(it) && (!g || !it.gamme || it.gamme.split('/').includes(g) || slot === 'gants') && seasonOk(it, sm));
+    for (let attempt = 0; attempt < 40; attempt++) {
+      const o = {};
+      let tops = pool('haut');
+      if (!tops.length) tops = DATA.items.filter((it) => it.slot === 'haut' && it.tmin <= T + 4);
+      o.haut = pick(tops);
+      const needLayer = T < 10 || (T < 16 && Math.random() < 0.5);
+      if (needLayer) {
+        const ls = DATA.items.filter((it) => it.slot === 'couche' && T >= it.tmin - 2 && T <= it.tmax + 2 && seasonOk(it, sm));
+        o.couche = ls.length ? pick(ls) : null;
+      }
+      const bs = pool('bas'); o.bas = bs.length ? pick(bs) : pick(DATA.items.filter((it) => it.slot === 'bas'));
+      const gs = DATA.items.filter((it) => it.slot === 'gants' && fits(it)); o.gants = gs.length ? pick(gs) : null;
+      const gam = (o.haut.gamme || '') + (o.bas.gamme || '');
+      const outl = /outlands/.test(gam);
+      const hs = DATA.items.filter((it) => it.slot === 'casque' && (outl ? it.model === 'Search' : it.model !== 'Search' && (/race/.test(gam) ? /S-Works/.test(it.model) : true)));
+      o.casque = pick(hs);
+      const ss = DATA.items.filter((it) => it.slot === 'chaussures' && (outl ? it.model === 'Urano' : it.model !== 'Urano'));
+      o.chaussures = pick(ss);
+      const kinds = [o.haut, o.couche, o.bas].filter(Boolean).map((it) => it.seasonKind);
+      if (mix && !(kinds.includes('old') && kinds.some((k) => k !== 'old')) && attempt < 39) continue;
+      state.presetId = null;
+      for (const s of SLOTS) state.outfit[s.key] = o[s.key] ? o[s.key].id : null;
+      return;
+    }
+  }
+  function updateTempLabel() { $('temp-val').textContent = `${$('temp').value} °C`; }
+
+  // ---------- Événements
+  $('tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (!b) return; state.tab = b.dataset.tab; renderTabs(); renderGrid(); syncTune(); });
+  $('grid').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-id]'); if (!b) return;
+    state.outfit[state.tab] = b.dataset.id || null; state.presetId = null;
+    $('grid').querySelectorAll('[data-id]').forEach((el) => el.setAttribute('aria-pressed', String(el === b)));
+    renderPresets(); renderLegend(); syncTune(); render(); persist();
+  });
+  $('presets').addEventListener('click', (e) => { const b = e.target.closest('[data-preset]'); if (b) applyPreset(DATA.presets.find((p) => p.id === b.dataset.preset)); });
+  $('temp').addEventListener('input', () => { updateTempLabel(); renderTabs(); renderGrid(); renderLegend(); persist(); });
+  for (const id of ['temp-filter', 'gamme', 'saison']) $(id).addEventListener('change', () => { renderTabs(); renderGrid(); });
+  $('random').addEventListener('click', () => { randomOutfit(); refresh(); });
+  $('copy').addEventListener('click', () => {
+    const lines = SLOTS.map((s) => { const it = byId.get(state.outfit[s.key]); return it ? `${s.label} : ${itemTitle(it)}${it.colour ? ' — ' + it.colour : ''} (${fmtPrice(it.price)})` : null; }).filter(Boolean);
+    const text = lines.join('\n');
+    const btn = $('copy');
+    navigator.clipboard.writeText(text).then(() => { btn.textContent = 'Liste copiée'; setTimeout(() => (btn.textContent = 'Copier la liste'), 1600); })
+      .catch(() => { btn.textContent = 'Copie impossible ici'; setTimeout(() => (btn.textContent = 'Copier la liste'), 1600); });
+  });
+  function tuneInput() {
+    const it = byId.get(state.outfit[state.tab]); if (!it) return;
+    tweaks[it.id] = { s: Number($('t-scale').value), y: Number($('t-y').value), x: Number($('t-x').value) };
+    syncTune(); render(); persist();
+  }
+  for (const id of ['t-scale', 't-y', 't-x']) $(id).addEventListener('input', tuneInput);
+  $('t-reset').addEventListener('click', () => { const it = byId.get(state.outfit[state.tab]); if (it) { delete tweaks[it.id]; syncTune(); render(); persist(); } });
+  new ResizeObserver(() => render()).observe(cv);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => render());
+
+  fetch('catalogue.json').then((r) => r.json()).then((d) => {
+    DATA = d;
+    for (const it of d.items) byId.set(it.id, it);
+    if (saved.temp != null) $('temp').value = saved.temp;
+    updateTempLabel();
+    if (saved.outfit && Object.values(saved.outfit).some((id) => id && byId.has(id))) {
+      for (const s of SLOTS) state.outfit[s.key] = saved.outfit[s.key] && byId.has(saved.outfit[s.key]) ? saved.outfit[s.key] : null;
+      refresh();
+    } else {
+      applyPreset(d.presets[1]);
+    }
+  }).catch(() => { $('check-text').textContent = 'Le catalogue n’a pas pu être chargé. Rechargez la page.'; $('check').className = 'check warn'; });
+})();
+</script>
