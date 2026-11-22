@@ -130,6 +130,13 @@ select { font: inherit; color: var(--fg); background: var(--bg); border: 1px sol
 .rain-tag.dwr { color: var(--muted); background: color-mix(in srgb, var(--muted) 12%, transparent); }
 .card .rain-tag { margin-left: 0; margin-top: 2px; }
 .own { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: 1px; border: 1px solid var(--accent); color: var(--accent); }
+.own.wash { border-style: dashed; color: var(--warn); border-color: var(--warn); }
+.card.washing { opacity: .45; }
+.mini { font-size: 11px; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 0 8px; margin-left: 6px; color: var(--muted); }
+.mini:hover { border-color: var(--accent); color: var(--accent); }
+.wash-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.wash-actions .chip { font-size: 12px; padding: 4px 10px; }
+.wash-actions .chip:disabled { opacity: .5; cursor: default; }
 .own.wish { border-style: dashed; color: var(--muted); border-color: var(--muted); }
 .card .own { margin-left: 0; margin-top: 2px; }
 .check-detail { margin: -4px 0 0; padding: 0 12px; font-family: var(--font-data); font-size: 11px; color: var(--muted); white-space: pre-line; }
@@ -262,10 +269,13 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   let DATA = null;
   let WARD = { owned: [], wish: [], outfits: [] };
   const ownSet = new Set(), wishSet = new Set();
+  // Pièces au lavage : mémorisées dans ce navigateur, exclues du tirage aléatoire.
+  const washSet = new Set(Array.isArray(saved.wash) ? saved.wash : []);
+  const WASHABLE = ['sous', 'haut', 'bas', 'jambieres', 'gants', 'chaussettes'];
   const GAMME = { race: 'Race', audax: 'Audax', classic: 'Classic', outlands: 'Outlands', active: 'Active', explore: 'Explore' };
   const gammeTag = (it) => (it.gamme || '').split('/').filter((g) => GAMME[g]).map((g) => `<span class="gm ${g}">${GAMME[g]}</span>`).join('');
   const rainTag = (it) => it.rain === 'waterproof' ? '<span class="rain-tag">Imperméable</span>' : it.rain === 'dwr' ? '<span class="rain-tag dwr">Déperlant</span>' : '';
-  const ownTag = (it) => ownSet.has(it.id) ? '<span class="own">À moi</span>' : wishSet.has(it.id) ? '<span class="own wish">À acheter</span>' : '';
+  const ownTag = (it) => washSet.has(it.id) ? '<span class="own wash">Au lavage</span>' : ownSet.has(it.id) ? '<span class="own">À moi</span>' : wishSet.has(it.id) ? '<span class="own wish">À acheter</span>' : '';
   const byId = new Map();
   const imgs = new Map();
   const state = { outfit: {}, tab: 'haut', presetId: null };
@@ -633,10 +643,14 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       if (!it) return s.optional ? '' : `<div class="legend-row"><span class="slot">${s.label}</span><span class="name" style="color:var(--muted)">—</span><span></span></div>`;
       if (it.brand === 'Café du Cycliste') total += it.price || 0;
       const extra = it.tmin != null ? ` <span style="color:var(--muted);font-family:var(--font-data);font-size:11px">${it.tmin}–${it.tmax} °C</span>` : (it.use ? ` <span style="color:var(--muted);font-size:12px">${it.use}</span>` : '');
-      return `<div class="legend-row"><span class="slot">${s.label}</span><span class="name">${itemTitle(it)}${it.colour ? ' — ' + it.colour : ''}${gammeTag(it)}${pill(it)}${rainTag(it)}${ownTag(it)}${extra}</span><span class="price">${fmtPrice(it.price)}</span></div>`;
+      return `<div class="legend-row"><span class="slot">${s.label}</span><span class="name">${itemTitle(it)}${it.colour ? ' — ' + it.colour : ''}${gammeTag(it)}${pill(it)}${rainTag(it)}${ownTag(it)}${extra}${ownSet.has(it.id) && WASHABLE.includes(s.key) ? ` <button type="button" class="mini" data-wash="${it.id}">${washSet.has(it.id) ? 'Remettre propre' : 'Au lavage'}</button>` : ''}</span><span class="price">${fmtPrice(it.price)}</span></div>`;
     }).join('');
-    $('legend').innerHTML = rows + `<div class="legend-total"><span>Total textile Café du Cycliste</span><span>${Math.round(total)} €</span></div>`;
+    $('legend').innerHTML = rows + `<div class="legend-total"><span>Total textile Café du Cycliste</span><span>${Math.round(total)} €</span></div>`
+      + `<div class="wash-actions"><button type="button" class="chip" id="wash-outfit">Mettre cette tenue au lavage</button>`
+      + `<button type="button" class="chip" id="wash-clear"${washSet.size ? '' : ' disabled'}>Lessive faite${washSet.size ? ` (${washSet.size} pièce${washSet.size > 1 ? 's' : ''})` : ''}</button></div>`;
     const ch = coherence();
+    const dirty = SLOTS.map((s) => byId.get(state.outfit[s.key])).filter((it) => it && washSet.has(it.id));
+    if (dirty.length) { ch.ok = false; ch.text = `Au lavage : ${dirty.map((it) => it.model).join(', ')}. ` + ch.text; }
     $('check').className = 'check ' + (ch.ok ? 'ok' : 'warn');
     $('check-text').textContent = ch.text;
     $('check-detail').textContent = ch.detail || '';
@@ -650,7 +664,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     const slot = SLOTS.find((s) => s.key === state.tab);
     const cur = state.outfit[state.tab];
     let html = slot.optional ? `<button type="button" class="card none-card" data-id="" aria-pressed="${!cur}">Aucune</button>` : '';
-    html += list.map((it) => `<button type="button" class="card" data-id="${it.id}" aria-pressed="${it.id === cur}">
+    html += list.map((it) => `<button type="button" class="card${washSet.has(it.id) ? ' washing' : ''}" data-id="${it.id}" aria-pressed="${it.id === cur}">
       <span class="ph"><img loading="lazy" src="${it.img}" alt=""></span>
       <span class="t">${itemTitle(it)}</span>
       <span class="m">${it.colour || it.use || ''}${it.price ? ' · ' + fmtPrice(it.price) : ''}${(gammeTag(it) || it.season || it.tmin != null) ? '<br>' + gammeTag(it) + (it.tmin != null ? `<span class="temp-tag">${it.tmin}–${it.tmax} °C</span>` : '') + pill(it) : ''}${(ownTag(it) || rainTag(it)) ? '<br>' + rainTag(it) + ownTag(it) : ''}</span>
@@ -671,7 +685,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     $('o-scale').textContent = `${t.s || 100} %`; $('o-y').textContent = `${t.y || 0} cm`; $('o-x').textContent = `${t.x || 0} cm`;
     $('tune').querySelector('summary').textContent = it ? `Ajuster « ${itemTitle(it)} » sur le mannequin` : 'Ajuster la pièce sélectionnée sur le mannequin';
   }
-  function persist() { store.set({ tweaks, outfit: state.outfit, temp: tempNow() }); }
+  function persist() { store.set({ tweaks, outfit: state.outfit, temp: tempNow(), wash: [...washSet] }); }
   function refresh(all = true) {
     if (all) { renderTabs(); renderGrid(); renderPresets(); }
     renderLegend(); syncTune(); render(); persist();
@@ -692,7 +706,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     // éventuellement limitée à ma garde-robe, en mélangeant toujours ancien et nouveau quand c'est possible.
     const T = tempNow(), g = gammes();
     const own = !$('random-own-wrap').hidden && $('random-own').checked;
-    const mine = (it) => !own || ownSet.has(it.id);
+    const mine = (it) => !own || (ownSet.has(it.id) && !washSet.has(it.id));
     const fits = (it, m = 1) => it.tmin == null || (T >= it.tmin - m && T <= it.tmax + m);
     const gOk = (it) => gammeOk(it, g);
     const choose = (slot, test) => {
@@ -769,6 +783,14 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   for (const id of ['hide-couche', 'hide-jambieres']) $(id).addEventListener('change', () => render());
   $('surgants').addEventListener('change', () => renderLegend());
   $('rain').addEventListener('change', () => renderLegend());
+  $('legend').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.wash) { const id = b.dataset.wash; washSet.has(id) ? washSet.delete(id) : washSet.add(id); }
+    else if (b.id === 'wash-outfit') { for (const k of WASHABLE) { const id = state.outfit[k]; if (id && ownSet.has(id)) washSet.add(id); } }
+    else if (b.id === 'wash-clear') washSet.clear();
+    else return;
+    persist(); renderLegend(); renderGrid();
+  });
   $('gamme').addEventListener('click', (e) => {
     const b = e.target.closest('[data-g]'); if (!b) return;
     b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
