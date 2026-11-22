@@ -244,7 +244,7 @@ def main():
             continue
         handle = r['url'].split('/')[-1]
         from flatlay import colour_name as _cn
-        key = (r['modele'], COLOURS.get(handle, _cn(handle)), r['categorie'])
+        key = (r['modele'], COLOURS.get(handle, _cn(handle)), r['categorie'], 'sleeveless' in handle or '-bsl-' in handle)
         if key in seen:
             continue
         seen.add(key)

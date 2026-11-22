@@ -95,7 +95,7 @@ def colour_name(handle):
     # Ancien format : <genre>-<usage>-<catégorie>-<modèle>-<coloris en plusieurs mots>
     if parts[0] in ('men', 'women', 'unisex') and len(parts) > 4:
         words = parts[4:]
-        if words[0] in ('mvc', 'stars', 'calobra') and len(words) > 1:
+        if words[0] in ('mvc', 'stars', 'calobra', 'sleeveless') and len(words) > 1:
             words = words[1:]
         if words == ['cafe', 'factory']:
             return 'Café Factory'

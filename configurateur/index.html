@@ -675,8 +675,115 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   function renderPresets() {
     $('my-presets').innerHTML = WARD.outfits.map((p) => `<button type="button" class="chip" data-my="${p.id}" aria-pressed="${state.presetId === p.id}" title="${p.temp}">${p.name} <span style="opacity:.7;font-family:var(--font-data);font-size:11px">${p.temp}</span></button>`).join('');
     const o = WARD.outfits.find((p) => p.id === state.presetId);
-    $('outfit-note').hidden = !o;
-    if (o) $('outfit-note').innerHTML = `<b>${o.name}</b> · ${o.temp}<br>${o.note}`;
+    if (o) { $('outfit-note').hidden = false; $('outfit-note').innerHTML = `<b>${o.name}</b> · ${o.temp}<br>${o.note}`; return; }
+    const auto = styleComment();
+    $('outfit-note').hidden = !auto;
+    if (auto) $('outfit-note').innerHTML = `<b>Le look</b><br>${auto}`;
+  }
+
+  // ---------- Commentaire de style automatique (toute combinaison du catalogue)
+  // Mots-clés de coloris -> [nom en français, famille]. Familles : sombre, clair, froid, terre, vif, motif.
+  const COLOR_WORDS = [
+    ['mariniere', 'marinière', 'motif'], ['marinière', 'marinière', 'motif'], ['café factory', 'imprimé Café Factory', 'motif'],
+    ['the grip', 'imprimé The Grip', 'motif'], ['topologie', 'imprimé Topologie', 'motif'], ['café × pain', 'imprimé Café × Pain', 'motif'],
+    ['hidden word', 'imprimé graphique', 'motif'], ['pastel', 'pastel', 'clair'], ['mvc', 'vert MVC', 'terre'],
+    ['red moss', 'rouille', 'terre'], ['race red', 'rouge', 'vif'], ['cinder red', 'rouge brique', 'vif'], ['red', 'rouge', 'vif'],
+    ['mineral pink', 'rose minéral', 'vif'], ['pink', 'rose', 'vif'], ['lemon', 'jaune citron', 'vif'], ['sunflower', 'jaune tournesol', 'vif'],
+    ['naples', 'jaune de Naples', 'vif'], ['yellow', 'jaune', 'vif'], ['lime', 'vert citron', 'vif'], ['mustard', 'moutarde', 'terre'],
+    ['golden olive', 'olive doré', 'terre'], ['purple rain', 'violet', 'vif'], ['purple', 'violet', 'vif'], ['amethyst', 'améthyste', 'vif'],
+    ['light quetsche', 'prune clair', 'vif'], ['quetsche', 'prune', 'vif'], ['dahlia', 'dahlia', 'vif'], ['violet', 'violet', 'vif'],
+    ['henna', 'henné', 'terre'], ['grey lilac', 'lilas', 'clair'], ['verbena', 'lavande', 'froid'], ['jadeite', "vert d'eau", 'froid'],
+    ['dark sea', 'bleu profond', 'froid'], ['deep water', 'bleu canard', 'froid'], ['sea', 'bleu mer', 'froid'], ['denim', 'bleu denim', 'froid'],
+    ['riviera blue', 'bleu Riviera', 'froid'], ['ice blue', 'bleu glacier', 'clair'], ['blue', 'bleu', 'froid'], ['puddle', 'gris-bleu', 'clair'],
+    ['navy', 'marine', 'sombre'], ['avocado', 'avocat', 'terre'], ['scots pine', 'vert sapin', 'terre'], ['khaki', 'kaki', 'terre'],
+    ['olive', 'olive', 'terre'], ['lichen', 'vert lichen', 'terre'], ['hay green', 'vert foin', 'terre'], ['moss', 'vert mousse', 'terre'],
+    ['dark green', 'vert sapin', 'terre'], ['emerald', 'émeraude', 'vif'], ['cactus', 'vert cactus', 'froid'], ['meteor', 'vert', 'froid'],
+    ['green', 'vert', 'terre'], ['carob', 'carob', 'terre'], ['chocolate', 'chocolat', 'terre'], ['brown', 'brun', 'terre'],
+    ['clay', 'terre cuite', 'terre'], ['sandstone', 'grès', 'terre'], ['cashew', 'beige', 'clair'], ['oyster', 'taupe', 'clair'],
+    ['mountain fog', 'gris-vert', 'clair'], ['horizon grey', 'gris bleuté', 'clair'], ['pearl grey', 'gris perle', 'clair'],
+    ['cliffside', 'gris roche', 'clair'], ['cloud grey', 'gris nuage', 'clair'], ['dove grey', 'gris colombe', 'clair'], ['fog', 'gris brume', 'clair'],
+    ['storm', 'gris orage', 'sombre'], ['smoke', 'gris fumé', 'sombre'], ['charcoal', 'charbon', 'sombre'], ['anthracite', 'anthracite', 'sombre'],
+    ['raven', 'gris corbeau', 'sombre'], ['black', 'noir', 'sombre'], ['noir', 'noir', 'sombre'], ['grey', 'gris', 'clair'], ['gray', 'gris', 'clair'],
+    ['chalk', 'blanc craie', 'clair'], ['creme', 'crème', 'clair'], ['white', 'blanc', 'clair'], ['blanc', 'blanc', 'clair'],
+  ];
+  function colorInfo(it) {
+    if (!it) return null;
+    if (it.slot === 'chaussures') {
+      if (it.brand === 'Northwave') return { fr: 'noir', fam: 'sombre' };
+      if (/gold/i.test(it.model)) return { fr: 'doré', fam: 'vif' };
+      if (/giro/i.test(it.model)) return { fr: 'rose', fam: 'vif' };
+      if (/stardust/i.test(it.model)) return { fr: 'argenté', fam: 'clair' };
+      return { fr: 'blanc', fam: 'clair' };
+    }
+    const c = (it.colour || '').toLowerCase();
+    const found = [];
+    for (const [k, fr, fam] of COLOR_WORDS) {
+      const i = c.indexOf(k);
+      // on ignore une couleur déjà couverte (même nom, même zone du texte, ou même teinte de base : « gris roche » + « gris »)
+      if (i >= 0 && !found.some((f) => f.fr === fr || f.fr.split(' ')[0] === fr.split(' ')[0]) && !found.some((f) => f.at <= i && i < f.at + f.len)) found.push({ k, fr, fam, at: i, len: k.length });
+    }
+    if (!found.length) return { fr: (it.colour || 'neutre').toLowerCase(), fam: 'motif' };
+    found.sort((a, b) => a.at - b.at);
+    const main = found[0], second = found[1];
+    return { fr: second ? `${main.fr} et ${second.fr}` : main.fr, fam: second && main.fam !== second.fam ? (main.fam === 'sombre' ? second.fam : main.fam) : main.fam, main: main.fr };
+  }
+  const coloured = (f) => ['vif', 'froid', 'terre', 'motif'].includes(f);
+  // Petits outils de français : élision (d'Angeline, l'olive) et accord des couleurs au pluriel.
+  const vowel = (w) => /^[aeiouyéèêàâîôûh]/i.test(w) && !/^h(enné|aut)/i.test(w);
+  const D = (n) => (vowel(n) ? "d'" : 'de ') + n;
+  const L = (c) => (vowel(c) ? "l'" : 'le ') + c;
+  const Lc = (c) => { const x = L(c); return x[0].toUpperCase() + x.slice(1); };
+  const PLURAL = { noir: ['noirs', 'noires'], blanc: ['blancs', 'blanches'], rouge: ['rouges', 'rouges'], rose: ['roses', 'roses'],
+    violet: ['violets', 'violettes'], vert: ['verts', 'vertes'], bleu: ['bleus', 'bleues'], beige: ['beiges', 'beiges'],
+    doré: ['dorés', 'dorées'], argenté: ['argentés', 'argentées'], jaune: ['jaunes', 'jaunes'] };
+  const FEM = { noir: 'noire', blanc: 'blanche', violet: 'violette', vert: 'verte', bleu: 'bleue', doré: 'dorée', argenté: 'argentée', gris: 'grise' };
+  const fem = (c) => FEM[c] || c;
+  const pl = (c, fem) => (PLURAL[c] ? PLURAL[c][fem ? 1 : 0] : c); // couleurs composées ou noms (kaki, marine, bleu canard) : invariables
+  function styleComment() {
+    const g = (k) => byId.get(state.outfit[k]);
+    const layer = g('couche') && !$('hide-couche').checked ? g('couche') : null;
+    const top = g('haut'), bas = g('bas'), sous = g('sous');
+    const stmt = layer && layer.cat !== 'gilet' ? layer : top || layer;
+    if (!stmt || !bas) return '';
+    const A = colorInfo(stmt), B = colorInfo(bas);
+    const nm = (it) => it.brand === 'Café du Cycliste' ? it.model.split(' ')[0] : it.brand;
+    const out = [];
+    if (A.main === B.main || A.fr === B.fr) out.push(`Ton sur ton : ${L(A.fr)} ${D(nm(stmt))} se prolonge dans ${L(B.fr)} ${D(nm(bas))}, pour une silhouette longue et homogène.`);
+    else if (coloured(A.fam) && B.fam === 'sombre') out.push(`${Lc(A.fr)} ${D(nm(stmt))} ressort sur la base ${fem(B.fr)} ${D(nm(bas))}, qui l'ancre sans l'alourdir.`);
+    else if (A.fam === 'clair' && B.fam === 'sombre') out.push(`${Lc(A.fr)} lumineux ${D(nm(stmt))} contraste avec ${L(B.fr)} ${D(nm(bas))} : un accord net et élégant.`);
+    else if (A.fam === 'sombre' && B.fam === 'sombre') out.push(`Tout en nuances sombres, ${A.fr} et ${B.fr} : une tenue sobre qui mise sur la coupe et les matières.`);
+    else if (!coloured(A.fam) && coloured(B.fam)) out.push(`C'est ${L(B.fr)} ${D(nm(bas))} qui apporte la couleur, sous ${L(A.fr)} plus discret ${D(nm(stmt))}.`);
+    else if (A.fam === 'vif' && coloured(B.fam)) out.push(`Contraste assumé entre ${L(A.fr)} ${D(nm(stmt))} et ${L(B.fr)} ${D(nm(bas))} : une tenue qui se remarque.`);
+    else if (A.fam === B.fam) out.push(`${Lc(A.fr)} ${D(nm(stmt))} et ${L(B.fr)} ${D(nm(bas))} restent dans la même famille de tons : un ensemble harmonieux.`);
+    else out.push(`${Lc(A.fr)} ${D(nm(stmt))} et ${L(B.fr)} ${D(nm(bas))} s'accordent dans une palette naturelle et douce.`);
+    // Couches visibles
+    if (layer && layer.cat !== 'gilet' && top) out.push(`On devine ${nm(top)} (${colorInfo(top).fr}) au col et à l'ourlet.`);
+    if (layer && layer.cat === 'gilet' && top) out.push(`Le gilet ${colorInfo(layer).fr} encadre ${nm(top)}, dont les manches ${colorInfo(top).fr} restent visibles.`);
+    if (sous && sous.turtleneck) out.push(`Le col roulé ${colorInfo(sous).fr} ${D(nm(sous))} dépasse au cou comme une écharpe.`);
+    // Accessoires
+    const acc = [];
+    const gl = g('gants'), hel = g('casque'), sh = g('chaussures');
+    if (gl) {
+      const G = colorInfo(gl);
+      const gf = pl(G.fr, false);
+      if (G.main === A.main || (G.fam === A.fam && coloured(G.fam))) acc.push(`les gants ${gf} reprennent la couleur du haut, un détail qui soigne la tenue`);
+      else if (G.fam === 'clair') acc.push(`les gants ${gf} éclairent les mains`);
+      else if (G.fam === 'sombre') acc.push(`les gants ${gf} restent discrets`);
+      else acc.push(`les gants ${gf} ajoutent une touche de couleur`);
+    }
+    if (hel) {
+      const H = colorInfo(hel);
+      acc.push(H.fam === 'clair' ? `le casque ${H.fr} illumine le haut de la silhouette` : H.fam === 'sombre' ? `le casque ${H.fr} reste neutre` : `le casque ${H.fr} fait écho aux couleurs de la tenue`);
+    }
+    if (sh) {
+      const S = colorInfo(sh);
+      acc.push(S.fr === 'blanc' ? 'les chaussures blanches allègent le bas' : S.fam === 'sombre' ? `les chaussures ${pl(S.fr, true)} ancrent la silhouette` : `les chaussures ${pl(S.fr, true)} signent la tenue`);
+    }
+    if (acc.length) out.push('Côté accessoires, ' + acc.slice(0, -1).join(', ') + (acc.length > 1 ? ' et ' : '') + acc[acc.length - 1] + '.');
+    // Mise en garde : trop de couleurs vives
+    const vivid = [stmt, bas, gl, hel].filter(Boolean).map(colorInfo).filter((x) => x.fam === 'vif').map((x) => x.main);
+    if (new Set(vivid).size >= 2) out.push(`Attention, ${[...new Set(vivid)].join(' et ')} se font concurrence : garde une seule couleur vive.`);
+    return out.join(' ');
   }
   function syncTune() {
     const it = byId.get(state.outfit[state.tab]);
