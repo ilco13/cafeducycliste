@@ -60,7 +60,8 @@ GAMME_OF = {m: g for g, ms in GAMME_BY_MODEL.items() for m in ms}
 # Protection contre la pluie, d'après les fiches produits.
 WATERPROOF = {'Suzette', 'Alizee', 'Victoria', 'Extreme R GTX', 'Winter'}
 WATER_REPELLENT = {'Manon', 'Sibille', 'Marie', 'Elise', 'Adrienne', 'Laetitia', 'Lili', 'Lola', 'Softshell',
-                   'FS260 Thermo Bib Tights II', 'Alexia'}
+                   'Alexia'}
+# (Endura FS260 retiré : l'utilisateur constate que le sien ne protège pas de la pluie.)
 
 
 def rain_of(model):
