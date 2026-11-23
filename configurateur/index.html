@@ -60,6 +60,12 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: 26px; letter
 /* Scène */
 .stage-wrap { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 12px; }
 @media (max-width: 860px) { .stage-wrap { position: static; } }
+.arrows { position: absolute; inset: 0; pointer-events: none; }
+.arrow-row { position: absolute; left: 0; right: 0; transform: translateY(-50%); display: flex; justify-content: space-between; align-items: center; padding: 0 4px; }
+.arrow-row button { pointer-events: auto; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 85%, transparent); color: var(--fg); font-size: 16px; line-height: 1; display: grid; place-items: center; padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.arrow-row button:hover { border-color: var(--accent); color: var(--accent); }
+.arrow-row .lab { position: absolute; right: 38px; text-align: right; font-family: var(--font-data); font-size: 9px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); pointer-events: none; opacity: .85; }
+@media (max-width: 500px) { .arrow-row .lab { display: none; } .arrow-row button { width: 24px; height: 24px; font-size: 14px; } }
 .stage { background: linear-gradient(180deg, var(--stage) 0%, var(--stage) 78%, var(--stage-floor) 100%); border-radius: 10px; position: relative; overflow: hidden; }
 #cv { display: block; width: 100%; height: auto; aspect-ratio: 120 / 192; max-width: 100%; }
 .stage-badge { position: absolute; left: 12px; top: 10px; font-family: var(--font-data); font-size: 11px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
@@ -167,6 +173,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   <section class="stage-wrap" aria-label="Mannequin">
     <div class="stage">
       <span class="stage-badge">Mannequin H · 180 cm</span>
+      <div class="arrows" id="arrows" aria-label="Changer un élément"></div>
       <canvas id="cv" width="600" height="960" role="img" aria-label="Mannequin habillé avec la tenue sélectionnée"></canvas>
     </div>
     <div class="view-toggles" role="group" aria-label="Affichage">
@@ -425,7 +432,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     c.save();
     c.strokeStyle = css('--muted'); c.fillStyle = css('--muted'); c.lineWidth = 0.18;
     c.font = `2.3px ${css('--font-data') || 'monospace'}`; c.textAlign = 'left'; c.textBaseline = 'middle';
-    const x = -55;
+    const x = -50; // décalée pour laisser la place aux flèches
     c.beginPath(); c.moveTo(x, 0); c.lineTo(x, 180); c.stroke();
     for (let cm = 0; cm <= 180; cm += 10) {
       const y = 180 - cm;
@@ -876,6 +883,29 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     for (const s of SLOTS) state.outfit[s.key] = best[s.key] ? best[s.key].id : null;
   }
   function updateTempLabel() { $('temp-val').textContent = `${$('temp').value} °C`; }
+
+  // ---------- Flèches de changement rapide sur le mannequin
+  // Hauteur (cm depuis le haut du crâne) de chaque rangée de flèches.
+  const ARROW_Y = { casque: 6, sous: 30, haut: 46, couche: 62, gants: 84, bas: 104, jambieres: 132, chaussettes: 156, chaussures: 175 };
+  function renderArrows() {
+    $('arrows').innerHTML = SLOTS.filter((s) => ARROW_Y[s.key] != null).map((s) => {
+      const top = ((ARROW_Y[s.key] + M.top) / M.H) * 100;
+      return `<div class="arrow-row" style="top:${top}%"><button type="button" data-cycle="${s.key}" data-dir="-1" aria-label="${s.label} précédent">‹</button><span class="lab">${s.label}</span><button type="button" data-cycle="${s.key}" data-dir="1" aria-label="${s.label} suivant">›</button></div>`;
+    }).join('');
+  }
+  function cycleSlot(slot, dir) {
+    const def = SLOTS.find((s) => s.key === slot);
+    const list = visible(slot).filter((it) => !washSet.has(it.id)).map((it) => it.id);
+    if (def.optional) list.unshift(null);
+    if (!list.length) return;
+    const i = list.indexOf(state.outfit[slot] ?? null);
+    state.outfit[slot] = list[((i < 0 ? (dir > 0 ? -1 : 0) : i) + dir + list.length) % list.length];
+    state.presetId = null;
+    if (state.tab === slot) renderGrid();
+    renderPresets(); renderLegend(); syncTune(); render(); persist();
+  }
+  $('arrows').addEventListener('click', (e) => { const b = e.target.closest('[data-cycle]'); if (b) cycleSlot(b.dataset.cycle, Number(b.dataset.dir)); });
+  renderArrows();
 
   // ---------- Événements
   $('tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (!b) return; state.tab = b.dataset.tab; renderTabs(); renderGrid(); syncTune(); });
