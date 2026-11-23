@@ -895,7 +895,9 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   }
   function cycleSlot(slot, dir) {
     const def = SLOTS.find((s) => s.key === slot);
-    const list = visible(slot).filter((it) => !washSet.has(it.id)).map((it) => it.id);
+    // « Avec ma garde-robe » coché : les flèches ne font défiler que mes pièces.
+    const ownOnly = !$('random-own-wrap').hidden && $('random-own').checked;
+    const list = visible(slot).filter((it) => !washSet.has(it.id) && (!ownOnly || ownSet.has(it.id))).map((it) => it.id);
     if (def.optional) list.unshift(null);
     if (!list.length) return;
     const i = list.indexOf(state.outfit[slot] ?? null);
