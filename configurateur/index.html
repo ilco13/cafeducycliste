@@ -4,6 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <style>
 /* Layout : une cabine d'essayage. À gauche le mannequin à l'échelle (règle en cm) ; à droite le portant (onglets par poste, filtres, vignettes). */
 :root {
@@ -67,6 +68,18 @@ h1 { font-family: var(--font-display); font-weight: 800; font-size: 26px; letter
 .arrow-row .lab { position: absolute; right: 38px; text-align: right; font-family: var(--font-data); font-size: 9px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); pointer-events: none; opacity: .85; }
 @media (max-width: 500px) { .arrow-row .lab { display: none; } .arrow-row button { width: 24px; height: 24px; font-size: 14px; } }
 .stage { background: linear-gradient(180deg, var(--stage) 0%, var(--stage) 78%, var(--stage-floor) 100%); border-radius: 10px; position: relative; overflow: hidden; }
+#v3d { width: 100%; aspect-ratio: 120 / 192; cursor: grab; }
+#v3d:active { cursor: grabbing; }
+.stage.is3d #cv, .stage.is3d .arrow-row .lab { display: none; }
+.stage.is3d .arrows { top: 0; bottom: 0; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button { border: 0; background: transparent; color: var(--fg); padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.v3d-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.v3d-bar[hidden] { display: none; }
+.v3d-bar .chip { font-size: 12px; padding: 3px 10px; }
+.v3d-msg[hidden] { display: none; }
+.v3d-msg { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 13px; pointer-events: none; }
 #cv { display: block; width: 100%; height: auto; aspect-ratio: 120 / 192; max-width: 100%; }
 .stage-badge { position: absolute; left: 12px; top: 10px; font-family: var(--font-data); font-size: 11px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
 .check { display: flex; gap: 8px; align-items: center; padding: 8px 12px; border-radius: 8px; font-weight: 500; }
@@ -175,6 +188,18 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       <span class="stage-badge">Mannequin H · 180 cm</span>
       <div class="arrows" id="arrows" aria-label="Changer un élément"></div>
       <canvas id="cv" width="600" height="960" role="img" aria-label="Mannequin habillé avec la tenue sélectionnée"></canvas>
+      <div id="v3d" hidden role="img" aria-label="Mannequin 3D habillé, à faire pivoter à la souris ou au doigt"></div>
+      <div class="v3d-msg" id="v3d-msg" hidden>Chargement de la vue 3D…</div>
+    </div>
+    <div class="v3d-bar">
+      <div class="seg" role="group" aria-label="Type de vue"><button type="button" data-mode="2d" aria-pressed="true">Vue 2D</button><button type="button" data-mode="3d" aria-pressed="false">Vue 3D</button></div>
+      <span id="v3d-cams" class="v3d-bar" hidden>
+        <button type="button" class="chip" data-cam="face">Face</button>
+        <button type="button" class="chip" data-cam="3/4">3/4</button>
+        <button type="button" class="chip" data-cam="profil">Profil</button>
+        <button type="button" class="chip" data-cam="dos">Dos</button>
+        <label class="toggle"><input type="checkbox" id="v3d-rot"> Rotation</label>
+      </span>
     </div>
     <div class="view-toggles" role="group" aria-label="Affichage">
       <label class="toggle"><input type="checkbox" id="hide-couche"> Masquer la veste / le gilet</label>
@@ -495,6 +520,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     }
     const clothed = !!(topIt || (state.outfit.couche && !hidden('couche')) || sousIt);
     drawMannequin(c, !(state.outfit.couche && !hidden('couche')) && !(topIt && topIt.cat === 'maillot_ml') && !(sousIt && sousIt.sleeves === 'long'), clothed);
+    const places = {};
     for (const s of order) {
       const pair = loaded[s]; if (!pair || !pair[1] || hidden(s)) continue;
       const [it, im] = pair; const p = placement(it, im);
@@ -509,6 +535,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
         const tp = placement(loaded.haut[0], loaded.haut[1]);
         if (tp.w > p.w) { const nw = Math.min(tp.w * 1.02, p.w * 1.2); p.x -= (nw - p.w) / 2; p.w = nw; }
       }
+      places[s] = { it, im, p };
       c.save();
       c.shadowColor = 'rgba(0,0,0,0.18)'; c.shadowBlur = 1.2 * k; c.shadowOffsetY = 0.4 * k;
       if ((it.slot === 'haut' || it.slot === 'sous') && loaded.couche && loaded.couche[1] && !hidden('couche') && loaded.couche[0].cat !== 'gilet') {
@@ -561,6 +588,34 @@ details.tune summary { cursor: pointer; font-weight: 600; }
       }
       c.restore();
     }
+    push3d(places);
+  }
+
+  // ---------- Vue 3D (module chargé à la demande)
+  const v3d = { on: false, view: null, loading: null, last: null };
+  function push3d(places) { v3d.last = places; if (v3d.on && v3d.view) v3d.view.update(places); }
+  async function setMode(mode) {
+    v3d.on = mode === '3d';
+    for (const b of document.querySelectorAll('[data-mode]')) b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
+    document.querySelector('.stage').classList.toggle('is3d', v3d.on);
+    $('v3d').hidden = !v3d.on; $('v3d-cams').hidden = !v3d.on;
+    try { localStorage.setItem('cdc-cabine-mode', mode); } catch {}
+    if (!v3d.on) { v3d.view?.stop(); render(); return; }
+    if (!v3d.view) {
+      $('v3d-msg').hidden = false;
+      try {
+        v3d.loading = v3d.loading || import('./vue3d.js');
+        const mod = await v3d.loading;
+        v3d.view = v3d.view || mod.createView($('v3d'), { isDark: () => matchMedia('(prefers-color-scheme: dark)').matches && document.documentElement.dataset.theme !== 'light' || document.documentElement.dataset.theme === 'dark' });
+        $('v3d-msg').hidden = true;
+      } catch (e) {
+        $('v3d-msg').textContent = 'La vue 3D n’a pas pu se charger (WebGL ou réseau indisponible).';
+        return;
+      }
+    }
+    if (!v3d.on) return;
+    v3d.view.start(); v3d.view.setAutoRotate($('v3d-rot').checked);
+    if (v3d.last) v3d.view.update(v3d.last);
   }
 
   // ---------- Filtres, cohérence
@@ -908,6 +963,9 @@ details.tune summary { cursor: pointer; font-weight: 600; }
   }
   $('arrows').addEventListener('click', (e) => { const b = e.target.closest('[data-cycle]'); if (b) cycleSlot(b.dataset.cycle, Number(b.dataset.dir)); });
   renderArrows();
+  for (const b of document.querySelectorAll('[data-mode]')) b.addEventListener('click', () => setMode(b.dataset.mode));
+  for (const b of document.querySelectorAll('[data-cam]')) b.addEventListener('click', () => { $('v3d-rot').checked = false; v3d.view?.setAutoRotate(false); v3d.view?.view(b.dataset.cam); });
+  $('v3d-rot').addEventListener('change', (e) => v3d.view?.setAutoRotate(e.target.checked));
 
   // ---------- Événements
   $('tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (!b) return; state.tab = b.dataset.tab; renderTabs(); renderGrid(); syncTune(); });
@@ -974,6 +1032,8 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     } else {
       applyPreset(WARD.outfits[0] || d.presets[1]);
     }
+    let m0 = '2d'; try { m0 = localStorage.getItem('cdc-cabine-mode') || '2d'; } catch {}
+    if (m0 === '3d') setMode('3d');
   }).catch(() => { $('check-text').textContent = 'Le catalogue n’a pas pu être chargé. Rechargez la page.'; $('check').className = 'check warn'; });
 })();
 </script>
