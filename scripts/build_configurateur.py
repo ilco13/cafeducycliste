@@ -100,7 +100,27 @@ EXTRA_OTHER = [  # (id, marque, modèle, coloris, image, catégorie, (tmin, tmax
     ('endura-fs260-thermo-bib-tights-ii', 'Endura', 'FS260 Thermo Bib Tights II', 'Black',
      'https://cdn.shopify.com/s/files/1/0957/9518/3923/files/R-E5079BK-B1-1.jpg', 'collant', (2, 10),
      'Thermoroubaix, déperlant'),
+    ('endura-pro-sl-ls-jersey-black-cherry', 'Endura', 'Pro SL L/S Jersey', 'Black Cherry',
+     'https://cdn.shopify.com/s/files/1/0957/9518/3923/files/R-E3177PBC-B1-1.jpg', 'maillot_ml', (8, 16),
+     'Thermique, coupe course'),
+    # Le Pro SL vert (Deep Teal, jambes longues) n'est plus en ligne : photo du modèle noir recolorée.
+    ('endura-pro-sl-bib-shorts-deep-teal', 'Endura', 'Pro SL Bib Shorts', 'Deep Teal (visuel recoloré)',
+     'https://cdn.shopify.com/s/files/1/0957/9518/3923/files/R-E4074BK-Y1.jpg', 'cuissard', (16, 35),
+     'Jambes longues (+4 cm)'),
 ]
+# Recoloration d'un packshot noir : la luminance est conservée, la teinte devient celle indiquée.
+TINT = {'endura-pro-sl-bib-shorts-deep-teal': (18, 72, 74)}
+
+
+def tint(im, rgb):
+    import numpy as np
+    a = np.asarray(im.convert('RGBA')).astype(float)
+    lum = (0.299 * a[..., 0] + 0.587 * a[..., 1] + 0.114 * a[..., 2]) / 255.0
+    # les noirs deviennent la teinte, les zones claires (bretelles, logos) restent claires
+    for c in range(3):
+        a[..., c] = rgb[c] * (0.6 + 1.6 * lum)
+    a[..., :3] = a[..., :3].clip(0, 255)
+    return Image.fromarray(a.astype('uint8'), 'RGBA')
 
 EXTRA_HELMETS = [  # (id, modèle, coloris, image, usage)
     ('helmet-evade3-smoke', 'S-Works Evade 3', 'Smoke', 'https://www.balfesbikes.co.uk/images/products/2/27/275668-smk.jpg', 'Aéro'),
@@ -284,10 +304,12 @@ def main():
         print('ok', iid)
     for iid, brand, model, colour, url, cat, (tmin, tmax), use in EXTRA_OTHER:
         im = cutout(fetch(url, iid + '.src'), remove_bg=True)
-        w, h = save(im, iid + '.webp')
+        if iid in TINT:
+            im = tint(im, TINT[iid])
+        w, h = save(im, iid + '.webp', force=iid in TINT)
         items.append({'id': iid, 'slot': SLOT[cat], 'cat': cat, 'brand': brand, 'model': model, 'colour': colour,
                       'price': None, 'gamme': '', 'season': '', 'seasonKind': '', 'tmin': tmin, 'tmax': tmax,
-                      'kind': 'collant' if cat == 'collant' else cat, 'use': use, 'img': 'assets/' + iid + '.webp',
+                      'kind': 'collant' if cat == 'collant' else 'court' if cat == 'cuissard' else cat, 'use': use, 'img': 'assets/' + iid + '.webp',
                       'w': w, 'h': h, 'url': ''})
         print('ok', iid)
     for iid, model, colour, url, use in EXTRA_HELMETS:

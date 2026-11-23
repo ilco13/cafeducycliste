@@ -687,7 +687,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     ['mariniere', 'marinière', 'motif'], ['marinière', 'marinière', 'motif'], ['café factory', 'imprimé Café Factory', 'motif'],
     ['the grip', 'imprimé The Grip', 'motif'], ['topologie', 'imprimé Topologie', 'motif'], ['café × pain', 'imprimé Café × Pain', 'motif'],
     ['hidden word', 'imprimé graphique', 'motif'], ['pastel', 'pastel', 'clair'], ['mvc', 'vert MVC', 'terre'],
-    ['red moss', 'rouille', 'terre'], ['race red', 'rouge', 'vif'], ['cinder red', 'rouge brique', 'vif'], ['red', 'rouge', 'vif'],
+    ['black cherry', 'bordeaux prune', 'vif'], ['teal', 'vert canard', 'froid'], ['red moss', 'rouille', 'terre'], ['race red', 'rouge', 'vif'], ['cinder red', 'rouge brique', 'vif'], ['red', 'rouge', 'vif'],
     ['mineral pink', 'rose minéral', 'vif'], ['pink', 'rose', 'vif'], ['lemon', 'jaune citron', 'vif'], ['sunflower', 'jaune tournesol', 'vif'],
     ['naples', 'jaune de Naples', 'vif'], ['yellow', 'jaune', 'vif'], ['lime', 'vert citron', 'vif'], ['mustard', 'moutarde', 'terre'],
     ['golden olive', 'olive doré', 'terre'], ['purple rain', 'violet', 'vif'], ['purple', 'violet', 'vif'], ['amethyst', 'améthyste', 'vif'],
@@ -746,7 +746,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
     const stmt = layer && layer.cat !== 'gilet' ? layer : top || layer;
     if (!stmt || !bas) return '';
     const A = colorInfo(stmt), B = colorInfo(bas);
-    const nm = (it) => it.brand === 'Café du Cycliste' ? it.model.split(' ')[0] : it.brand;
+    const nm = (it) => it.brand === 'Café du Cycliste' ? it.model.split(' ')[0] : `${it.brand} ${it.model.split(' ').slice(0, 2).join(' ')}`;
     const out = [];
     if (A.main === B.main || A.fr === B.fr) out.push(`Ton sur ton : ${L(A.fr)} ${D(nm(stmt))} se prolonge dans ${L(B.fr)} ${D(nm(bas))}, pour une silhouette longue et homogène.`);
     else if (coloured(A.fam) && B.fam === 'sombre') out.push(`${Lc(A.fr)} ${D(nm(stmt))} ressort sur la base ${fem(B.fr)} ${D(nm(bas))}, qui l'ancre sans l'alourdir.`);
