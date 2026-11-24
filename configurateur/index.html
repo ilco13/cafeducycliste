@@ -593,6 +593,7 @@ details.tune summary { cursor: pointer; font-weight: 600; }
 
   // ---------- Vue 3D (module chargé à la demande)
   const v3d = { on: false, view: null, loading: null, last: null };
+  window.cdcVue3d = v3d; // accès console (caméra libre pour comparer avec une photo)
   function push3d(places) { v3d.last = places; if (v3d.on && v3d.view) v3d.view.update(places); }
   async function setMode(mode) {
     v3d.on = mode === '3d';

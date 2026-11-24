@@ -4,38 +4,99 @@
 // La silhouette (manches, ourlet, col) vient de la transparence de la photo.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 const H = 180; // y 2D (cm depuis le sommet du crâne, vers le bas) -> Y 3D = H - y
-const SEG = 48;
 
-// ---------- Géométrie du corps (cm) : anneaux elliptiques [y, demi-largeur, demi-profondeur, décalage z]
+// ---------- Géométrie du corps (cm)
+// Torse : [y, demi-largeur, profondeur avant, profondeur arrière, décalage z]
 const TORSO = [
-  [17, 4.6, 5.0, -0.6], [23, 5.0, 5.4, -0.4], [25.5, 8.2, 6.6, -0.2], [27.6, 13, 8.3, 0], [29.6, 16.8, 9.5, 0],
-  [31.6, 19.2, 10.5, 0], [34, 20.3, 11.3, 0.2], [38.5, 20.1, 12, 0.5], [46, 18.6, 12.2, 0.8], [56, 16.3, 11.6, 0.6], [64, 14.9, 10.9, 0.4],
-  [69, 14.5, 10.6, 0.3], [76, 15.9, 11, 0], [82, 17.2, 11.4, -0.4], [87, 17.6, 11.6, -0.6], [91.5, 15.6, 10.8, -0.6], [95, 9.5, 7.5, -0.4],
+  [16, 4.5, 4.9, 4.9, -0.8], [21, 4.8, 5.2, 5.2, -0.6], [24, 6.2, 5.8, 6.0, -0.4], [26, 9.6, 6.6, 7.4, -0.2],
+  [27.8, 13.4, 7.6, 8.8, 0], [29.8, 17, 8.8, 9.9, 0], [31.8, 19.3, 9.9, 10.7, 0], [34.2, 20.3, 11.1, 11.1, 0.2],
+  [38.5, 20.1, 12.2, 11.5, 0.4], [44, 19.0, 12.5, 11.3, 0.4], [50, 17.4, 11.7, 10.9, 0.3], [56, 16.3, 11.0, 10.5, 0.2],
+  [63, 15.0, 10.6, 10.1, 0.2], [69, 14.6, 10.4, 9.9, 0.2], [75, 15.2, 10.3, 10.6, 0], [81, 16.3, 10.3, 11.8, -0.2],
+  [86.5, 16.7, 10.2, 12.6, -0.4], [91, 15.3, 9.7, 11.9, -0.4], [94.5, 10.2, 7.2, 8.3, -0.4], [96, 5, 4, 4.5, -0.4],
 ];
-// Jambe droite (x > 0) : [y, centre x, demi-largeur]
+// Jambe droite (x > 0) : [y, centre x, demi-largeur, profondeur avant, profondeur arrière]
 const LEG = [
-  [85, 8.9, 8.3], [93, 9.2, 8.2], [104, 9.3, 7.5], [114, 8.9, 6.4], [122, 8.2, 5.4], [132, 7.1, 4.3],
-  [138, 7.4, 4.4], [146, 7.3, 4.1], [154, 6.4, 3.5], [162, 5.4, 2.8], [170, 4.6, 2.2], [174.5, 4.5, 2.25],
+  [84, 8.5, 7.9, 8.1, 8.5], [93, 8.8, 7.8, 8.1, 8.3], [104, 8.9, 7.1, 7.6, 7.0], [114, 8.6, 6.2, 6.7, 5.9],
+  [123, 8.1, 5.5, 5.9, 5.2], [132, 7.2, 4.6, 4.9, 4.6], [138, 7.4, 4.8, 4.4, 5.6], [145, 7.3, 4.6, 4.0, 5.9],
+  [153, 6.5, 3.9, 3.6, 4.9], [161, 5.6, 3.0, 3.1, 3.4], [169, 4.7, 2.3, 2.6, 2.5], [174.5, 4.6, 2.3, 2.7, 2.7],
 ];
 // Bras : abscisse curviligne depuis l'épaule [s, rayon]
-const ARM_S = [[-3, 4.0], [0, 4.7], [6, 4.7], [16, 4.3], [29, 3.7], [33, 3.6], [44, 3.3], [56, 2.85], [59, 2.75]];
-const SHOULDER = [19.4, 34.5], ARM_ANG = 14 * Math.PI / 180, UPPER = 31, FORE = 27;
+const ARM_S = [[-3, 4.1], [0, 4.8], [6, 5.0], [14, 4.7], [22, 4.2], [29, 3.8], [33, 3.9], [40, 3.8], [48, 3.1], [56, 2.75], [59, 2.7]];
+const SHOULDER = [19.4, 34.5], ARM_ANG = 10 * Math.PI / 180, UPPER = 31, FORE = 27;
+const ELBOW_S = UPPER, HAND_S = UPPER + FORE + 8.2;
+// L'avant-bras part légèrement vers l'avant (coude un peu fléchi)
+const armZ = (s) => (s > ELBOW_S ? (s - ELBOW_S) * 0.13 : 0) + 0.3;
 
 function armFrame(side) {
   const dx = Math.sin(ARM_ANG) * side, dy = Math.cos(ARM_ANG);
   return { o: [SHOULDER[0] * side, SHOULDER[1]], d: [dx, dy], u: [dy, -dx] };
 }
 const wristY = SHOULDER[1] + (UPPER + FORE) * Math.cos(ARM_ANG);
+const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+const gauss = (x, m, s) => Math.exp(-((x - m) ** 2) / (2 * s * s));
+const lerp = (a, b, t) => a + (b - a) * t;
 
-// Loft : suite d'anneaux { c:[x,y2d,z], u:[ux,uy] (axe horizontal de l'ellipse, dans le plan xy), rx, rz }
-function loft(rings, off = 0, cap = false) {
+// Anneau : { c:[x,y2d,z], u:[ux,uy] (axe horizontal de l'ellipse dans le plan xy), rx, rf (avant), rb (arrière), p (rondeur), s }
+const KEYS = ['cx', 'cy', 'cz', 'ux', 'uy', 'rx', 'rf', 'rb', 'p', 's'];
+const flat = (r) => [r.c[0], r.c[1], r.c[2], r.u[0], r.u[1], r.rx, r.rf, r.rb, r.p ?? 1, r.s ?? 0];
+const unflat = (v) => ({ c: [v[0], v[1], v[2]], u: [v[3], v[4]], rx: v[5], rf: v[6], rb: v[7], p: v[8], s: v[9] });
+// Interpolation Catmull-Rom entre les anneaux : silhouette lisse au lieu d'une ligne brisée.
+function densify(rings, sub = 4) {
+  const F = rings.map(flat), out = [];
+  for (let i = 0; i < F.length - 1; i++) {
+    const p0 = F[Math.max(0, i - 1)], p1 = F[i], p2 = F[i + 1], p3 = F[Math.min(F.length - 1, i + 2)];
+    for (let k = 0; k < sub; k++) {
+      const t = k / sub, t2 = t * t, t3 = t2 * t;
+      out.push(unflat(p1.map((_, j) => 0.5 * (2 * p1[j] + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3))));
+    }
+  }
+  out.push(unflat(F[F.length - 1]));
+  return out;
+}
+// Garde les anneaux dont la clé est dans [lo, hi], avec un anneau interpolé sur chaque borne.
+function clip(rings, key, lo, hi) {
+  const out = [];
+  for (let i = 0; i < rings.length; i++) {
+    const v = key(rings[i]);
+    if (v >= lo && v <= hi) { out.push(rings[i]); continue; }
+    for (const j of [i - 1, i + 1]) {
+      const r2 = rings[j]; if (!r2) continue;
+      const w = key(r2);
+      if (w < lo || w > hi) continue;
+      const lim = v < lo ? lo : hi, t = (lim - v) / (w - v);
+      const a = flat(rings[i]), b = flat(r2);
+      out.push(unflat(a.map((x, k) => lerp(x, b[k], t))));
+    }
+  }
+  return out.sort((a, b) => key(a) - key(b));
+}
+const TORSO_R = densify(TORSO.map(([y, hw, f, b, z]) => ({ c: [0, y, z], u: [1, 0], rx: hw, rf: f, rb: b, p: 0.86, s: y })), 5);
+const LEG_R = densify(LEG.map(([y, cx, hw, f, b]) => ({ c: [cx, y, 0.4], u: [1, 0], rx: hw, rf: f, rb: b, p: 1, s: y })), 5);
+const ARM_R = densify(ARM_S.map(([s, r]) => ({ c: [0, 0, 0], u: [0, 0], rx: r * 0.97, rf: r, rb: r, p: 1, s })), 5);
+function torsoRings(y0 = -1e9, y1 = 1e9) { return clip(TORSO_R, (r) => r.c[1], y0, y1); }
+function legRings(side, y0 = -1e9, y1 = 1e9) {
+  return clip(LEG_R, (r) => r.c[1], y0, y1).map((r) => ({ ...r, c: [side * r.c[0], r.c[1], r.c[2]] }));
+}
+function armRings(side, s0 = -1e9, s1 = 1e9) {
+  const f = armFrame(side);
+  return clip(ARM_R, (r) => r.s, s0, s1).map((r) => ({ ...r, c: [f.o[0] + f.d[0] * r.s, f.o[1] + f.d[1] * r.s, armZ(r.s)], u: f.u }));
+}
+// abscisse sur le bras correspondant à une hauteur y (2D)
+const sAtY = (y) => (y - SHOULDER[1]) / Math.cos(ARM_ANG);
+
+// Loft : anneaux -> maillage. wr(r, t) ajoute un relief (plis) à la coque.
+const SEG = 64;
+function loft(rings, off = 0, cap = false, wr = null) {
   const pos = [], idx = [];
   for (const r of rings) {
     for (let j = 0; j <= SEG; j++) {
       const t = (j / SEG) * Math.PI * 2;
-      const a = Math.cos(t) * (r.rx + off), b = Math.sin(t) * (r.rz + off);
+      const c = Math.cos(t), sn = Math.sin(t), p = r.p ?? 1;
+      const o = off + (wr ? wr(r, t) : 0);
+      const a = Math.sign(c) * Math.abs(c) ** p * (r.rx + o), b = Math.sign(sn) * Math.abs(sn) ** p * ((sn >= 0 ? r.rf : r.rb) + o);
       pos.push(r.c[0] + r.u[0] * a, H - (r.c[1] + r.u[1] * a), r.c[2] + b);
     }
   }
@@ -62,81 +123,97 @@ function loft(rings, off = 0, cap = false) {
   g.computeVertexNormals();
   return g;
 }
-const lerp = (a, b, t) => a + (b - a) * t;
-function torsoRings(y0 = -1e9, y1 = 1e9) {
-  const out = [];
-  for (let i = 0; i < TORSO.length; i++) {
-    const [y, hw, hd, z] = TORSO[i];
-    if (y < y0 || y > y1) {
-      // anneau interpolé sur la borne, pour couper la coque proprement
-      const j = y < y0 ? i + 1 : i - 1;
-      const lim = y < y0 ? y0 : y1;
-      if (TORSO[j] && (y < y0 ? TORSO[j][0] > y0 : TORSO[j][0] < y1)) {
-        const t = (lim - y) / (TORSO[j][0] - y);
-        const r = TORSO[i].map((v, k) => lerp(v, TORSO[j][k], t));
-        out[y < y0 ? 'push' : 'push']({ c: [0, r[0], r[3]], u: [1, 0], rx: r[1], rz: r[2] });
-      }
-      continue;
-    }
-    out.push({ c: [0, y, z], u: [1, 0], rx: hw, rz: hd });
-  }
-  return out.sort((a, b) => a.c[1] - b.c[1]);
+// Plis : toujours positifs (le tissu ne rentre pas dans la couche du dessous)
+const wave = (x) => 0.5 + 0.5 * Math.sin(x);
+function sleeveFolds(amp, cutS) {
+  return (r, t) => {
+    const s = r.s;
+    const env = 0.25 + 1.1 * gauss(s, ELBOW_S + 1, 5) + 1.3 * smooth(cutS - 10, cutS - 1, s) * (cutS > 40 ? 1 : 0.3);
+    const fold = wave(s * 1.25 + 1.8 * Math.sin(t * 2 + s * 0.35)) * (0.55 + 0.45 * Math.cos(t + 1.2));
+    return amp * env * fold * smooth(-3, 4, s);
+  };
 }
-function legRings(side, y0 = -1e9, y1 = 1e9) {
-  const out = [];
-  for (let i = 0; i < LEG.length; i++) {
-    const [y, cx, hw] = LEG[i];
-    const clip = (lim) => {
-      const j = y < lim ? i + 1 : i - 1;
-      if (!LEG[j]) return;
-      const t = (lim - y) / (LEG[j][0] - y);
-      if (t < 0 || t > 1) return;
-      const r = LEG[i].map((v, k) => lerp(v, LEG[j][k], t));
-      out.push({ c: [side * r[1], r[0], 0.3], u: [1, 0], rx: r[2], rz: r[2] * 1.04 });
-    };
-    if (y < y0) { clip(y0); continue; }
-    if (y > y1) { clip(y1); continue; }
-    out.push({ c: [side * cx, y, y < 130 ? 0.3 : 0.6], u: [1, 0], rx: hw, rz: hw * (y < 130 ? 1.04 : 1.12) });
-  }
-  return out.sort((a, b) => a.c[1] - b.c[1]);
+function torsoFolds(amp) {
+  return (r, t) => {
+    const y = r.c[1];
+    const drape = smooth(48, 62, y) * (1 - smooth(86, 95, y)) * wave(t * 8 + Math.sin(y * 0.18) * 2) * 0.45;
+    const waist = gauss(y, 72, 5) * wave(y * 1.4 + 2 * Math.sin(t * 3)) * 0.9;
+    const pit = gauss(y, 40, 4) * gauss(Math.abs(Math.cos(t)), 1, 0.18) * wave(y * 2 + t * 3) * 1.2;
+    return amp * (drape + waist + pit);
+  };
 }
-function armRings(side, s0 = -1e9, s1 = 1e9) {
-  const f = armFrame(side), out = [];
-  const ring = (s, r) => ({ c: [f.o[0] + f.d[0] * s, f.o[1] + f.d[1] * s, 0], u: f.u, rx: r * 0.98, rz: r });
-  for (let i = 0; i < ARM_S.length; i++) {
-    const [s, r] = ARM_S[i];
-    if (s < s0 || s > s1) {
-      const lim = s < s0 ? s0 : s1, j = s < s0 ? i + 1 : i - 1;
-      if (ARM_S[j]) { const t = (lim - s) / (ARM_S[j][0] - s); if (t >= 0 && t <= 1) out.push(ring(lim, lerp(r, ARM_S[j][1], t))); }
-      continue;
-    }
-    out.push(ring(s, r));
-  }
-  return out.sort((a, b) => a.c[1] - b.c[1]);
+function legFolds(amp) {
+  return (r, t) => amp * (gauss(r.c[1], 132, 4) * wave(r.c[1] * 1.6 + 2 * Math.sin(t * 2)) + gauss(r.c[1], 94, 3) * wave(t * 5));
 }
-// abscisse sur le bras correspondant à une hauteur y (2D)
-const sAtY = (y) => (y - SHOULDER[1]) / Math.cos(ARM_ANG);
 
 function ellipsoid(rx, ry, rz, seg = 32) {
   const g = new THREE.SphereGeometry(1, seg, Math.round(seg * 0.75));
   g.scale(rx, ry, rz);
   return g;
 }
+// Chaussure : sections (largeur, hauteur) le long du pied, semelle plate. Repère local : x travers, y haut, z avant.
+function shoeGeometry(high) {
+  const prof = high
+    ? [[-7.6, 3.4, 15.5], [-6.6, 4.1, 16], [-4, 4.4, 15], [0, 4.5, 10.5], [4, 4.6, 8], [9, 4.7, 6.2], [13, 4.4, 4.6], [16.5, 3.7, 3.2], [18.8, 2.6, 2.2], [20, 1.2, 1.2]]
+    : [[-7.4, 3.3, 6.8], [-6.4, 4.0, 7.4], [-4, 4.3, 7.4], [0, 4.4, 6.9], [4, 4.6, 6.0], [9, 4.7, 5.0], [13, 4.4, 4.0], [16.5, 3.7, 2.9], [18.8, 2.6, 2.0], [20, 1.2, 1.1]];
+  const rings = prof.map(([z, w, h]) => ({ z, w, h }));
+  const dense = [];
+  for (let i = 0; i < rings.length - 1; i++) for (let k = 0; k < 4; k++) {
+    const t = k / 4, a = rings[i], b = rings[i + 1];
+    dense.push({ z: lerp(a.z, b.z, t), w: lerp(a.w, b.w, t), h: lerp(a.h, b.h, t) });
+  }
+  dense.push(rings[rings.length - 1]);
+  const pos = [], idx = [], N = 40;
+  for (const r of dense) {
+    for (let j = 0; j <= N; j++) {
+      const t = (j / N) * Math.PI * 2, c = Math.cos(t), sn = Math.sin(t);
+      // dessus arrondi, dessous presque plat
+      const y = sn >= 0 ? sn * r.h : sn * 0.6;
+      pos.push(Math.sign(c) * Math.abs(c) ** 0.7 * r.w, y + 0.6, r.z);
+    }
+  }
+  const n = N + 1;
+  for (let i = 0; i < dense.length - 1; i++) for (let j = 0; j < N; j++) {
+    const a = i * n + j, b = a + 1, c = a + n, d = c + 1;
+    idx.push(a, c, b, b, c, d);
+  }
+  for (const [ri, flip] of [[0, false], [dense.length - 1, true]]) {
+    const ci = pos.length / 3, r = dense[ri];
+    pos.push(0, r.h * 0.3, r.z);
+    for (let j = 0; j < N; j++) { const a = ri * n + j, b = a + 1; flip ? idx.push(ci, a, b) : idx.push(ci, b, a); }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx); g.computeVertexNormals();
+  return g;
+}
 
 // ---------- Matériau projeté
+// uAxis 0 : projection de face (x, y) ; 1 : projection de côté (z, y) dans le repère local du maillage.
 function garmentMaterial(opts) {
-  const m = new THREE.MeshStandardMaterial({ roughness: opts.roughness ?? 0.78, metalness: 0, side: THREE.DoubleSide });
+  const m = new THREE.MeshPhysicalMaterial({
+    roughness: opts.roughness ?? 0.8, metalness: 0, side: THREE.DoubleSide,
+    sheen: opts.sheen ?? 0.4, sheenRoughness: 0.65, sheenColor: new THREE.Color(0.55, 0.55, 0.55),
+    clearcoat: opts.clearcoat ?? 0, clearcoatRoughness: 0.25,
+  });
   const u = {
     uFront: { value: opts.front || null }, uBack: { value: opts.back || null },
     uRect: { value: new THREE.Vector4(...(opts.rect || [0, 0, 1, 1])) },
     uRectB: { value: new THREE.Vector4(...(opts.rectB || [0, 0, 1, 1])) },
     uBoxB: { value: new THREE.Vector4(...(opts.boxB || [0, 0, 1, 1])) },
+    uCrop: { value: new THREE.Vector4(...(opts.crop || [0, 0, 1, 1])) },
     uBase: { value: new THREE.Color(opts.base || '#888') },
     uMode: { value: opts.mode ?? 0 }, // 0 couleur unie, 1 projeté + découpe alpha, 2 projeté sans découpe
+    uAxis: { value: opts.axis ?? 0 },
+    uFlip: { value: opts.flip ? 1 : 0 },
     uCut: { value: new THREE.Vector2(opts.cutTop ?? -1e4, opts.cutBottom ?? 1e4) },
     uHasBack: { value: opts.back ? 1 : 0 },
     uKeep: { value: opts.keepShoulders ? 1 : 0 },
     uVent: { value: new THREE.Vector2(opts.vents || 0, opts.ventGap || 3) },
+    // manches (uAxis 2) : repère du bras 3D (origine, axe, normale) et segment épaule -> poignet de la manche sur la photo
+    uArmO: { value: new THREE.Vector2(...(opts.arm?.o || [0, 0])) }, uArmD: { value: new THREE.Vector2(...(opts.arm?.d || [0, 1])) },
+    uArmU: { value: new THREE.Vector2(...(opts.arm?.u || [1, 0])) }, uArmA: { value: new THREE.Vector2(...(opts.arm?.a || [0, 0])) },
+    uArmB: { value: new THREE.Vector2(...(opts.arm?.b || [0, 1])) }, uArmK: { value: new THREE.Vector2(...(opts.arm?.k || [1, 1])) },
   };
   m.userData.u = u;
   m.onBeforeCompile = (sh) => {
@@ -148,31 +225,45 @@ function garmentMaterial(opts) {
       .replace('#include <common>', `#include <common>
 varying vec3 vOP; varying vec3 vON;
 uniform sampler2D uFront; uniform sampler2D uBack;
-uniform vec4 uRect; uniform vec4 uRectB; uniform vec4 uBoxB; uniform vec3 uBase; uniform float uMode; uniform vec2 uCut; uniform float uHasBack; uniform vec2 uVent; uniform float uKeep;`)
+uniform vec4 uRect; uniform vec4 uRectB; uniform vec4 uBoxB; uniform vec4 uCrop; uniform vec3 uBase; uniform float uMode; uniform float uAxis; uniform float uFlip;
+uniform vec2 uCut; uniform float uHasBack; uniform vec2 uVent; uniform float uKeep;
+uniform vec2 uArmO; uniform vec2 uArmD; uniform vec2 uArmU; uniform vec2 uArmA; uniform vec2 uArmB; uniform vec2 uArmK;`)
       .replace('#include <map_fragment>', `
 float y2d = ${H.toFixed(1)} - vOP.y;
 if (y2d < uCut.x || y2d > uCut.y) discard;
 vec3 col = uBase;
+vec3 nO = normalize(vON);
 if (uMode > 0.5) {
-  vec2 uv = vec2((vOP.x - uRect.x) / uRect.z, (y2d - uRect.y) / uRect.w);
-  vec4 t = vec4(0.0);
-  if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0) t = texture2D(uFront, uv);
+  vec2 P = vec2(vOP.x, y2d);
+  if (uAxis > 1.5) {
+    // point du bras exprimé le long de la manche de la photo
+    vec2 d = P - uArmO; float sa = dot(d, uArmD), la = dot(d, uArmU);
+    vec2 dir = normalize(uArmB - uArmA), perp = vec2(dir.y, -dir.x);
+    P = uArmA + dir * sa * uArmK.x + perp * la * uArmK.y;
+  }
+  vec2 uv = (uAxis > 0.5 && uAxis < 1.5)
+    ? vec2((vOP.z - uRect.x) / uRect.z, (uRect.y - vOP.y) / uRect.w)
+    : vec2((P.x - uRect.x) / uRect.z, (P.y - uRect.y) / uRect.w);
+  if (uFlip > 0.5) uv.x = 1.0 - uv.x;
+  bool inside = uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0;
+  vec2 uvc = uCrop.xy + uv * uCrop.zw;
+  vec4 t = inside ? texture2D(uFront, uvc) : vec4(0.0);
   // épaules : la photo de face tombe plus bas que la coque ; on garde le tissu (sauf l'encolure)
   bool keep = uKeep > 0.5 && y2d < 38.0 && abs(vOP.x) > 7.0;
+  vec4 t0 = t;
   if (uMode < 1.5 && t.a < 0.5 && !keep) discard;
-  float nz = normalize(vON).z;
-  float front = smoothstep(-0.25, 0.35, nz);
+  float front = (uAxis > 0.5 && uAxis < 1.5) ? smoothstep(0.05, 0.5, abs(nO.x)) : smoothstep(-0.25, 0.35, nO.z);
   // sans vue de dos : couleurs de la face, très floutées (on garde les aplats, pas les logos ni le zip)
-  vec4 tbl = texture2D(uFront, uv, 6.0);
-  vec3 backCol = tbl.a > 0.3 ? mix(uBase, tbl.rgb / max(tbl.a, 0.001), 0.7) : uBase;
+  vec4 tbl = inside ? texture2D(uFront, uvc, 6.0) : vec4(0.0);
+  vec3 backCol = mix(uBase, tbl.rgb, 0.7 * smoothstep(0.75, 0.95, tbl.a));
   if (uHasBack > 0.5) {
     // vue de dos : boîte du vêtement de dos calée sur la boîte du vêtement de face, image miroir
-    vec2 ub = vec2((vOP.x - uRectB.x) / uRectB.z, (y2d - uRectB.y) / uRectB.w);
+    vec2 ub = vec2((P.x - uRectB.x) / uRectB.z, (P.y - uRectB.y) / uRectB.w);
     ub = vec2(uBoxB.x + (1.0 - ub.x) * uBoxB.z, uBoxB.y + ub.y * uBoxB.w);
     vec4 tb = texture2D(uBack, clamp(ub, 0.0, 1.0));
     if (tb.a > 0.5) backCol = tb.rgb;
   }
-  vec3 frontCol = t.a > 0.5 ? t.rgb : uBase;
+  vec3 frontCol = t.a > 0.5 ? t.rgb : backCol;
   col = mix(backCol, frontCol, front);
 }
 if (uVent.x > 0.5) {
@@ -184,7 +275,7 @@ if (uVent.x > 0.5) {
 }
 diffuseColor.rgb = col;`);
   };
-  m.customProgramCacheKey = () => 'garment';
+  m.customProgramCacheKey = () => 'garment2';
   return m;
 }
 
@@ -244,56 +335,68 @@ export function createView(container, { isDark = () => false } = {}) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  renderer.toneMapping = THREE.NeutralToneMapping; renderer.toneMappingExposure = 0.95; // couleurs fidèles aux packshots
   container.appendChild(renderer.domElement);
   renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none';
 
   const scene = new THREE.Scene();
+  // Éclairage de studio : environnement diffus (reflets doux) + lumière principale qui porte les ombres
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.55;
   const camera = new THREE.PerspectiveCamera(26, 1, 10, 3000);
   camera.position.set(170, 110, 440);
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(0, 89, 0);
   controls.enableDamping = true; controls.dampingFactor = 0.08;
-  controls.minDistance = 120; controls.maxDistance = 700;
+  controls.minDistance = 90; controls.maxDistance = 700;
   controls.minPolarAngle = 0.25; controls.maxPolarAngle = Math.PI / 2 + 0.05;
   controls.enablePan = true; controls.screenSpacePanning = true;
   controls.autoRotateSpeed = 1.6;
   controls.update();
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f96, 1.2));
-  const key = new THREE.DirectionalLight(0xffffff, 2.2);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa0a8, 0.55));
+  const key = new THREE.DirectionalLight(0xfff8f0, 2.3);
   key.position.set(120, 260, 200); key.castShadow = true;
   key.shadow.mapSize.set(2048, 2048);
   Object.assign(key.shadow.camera, { left: -70, right: 70, top: 200, bottom: -10, near: 50, far: 700 });
-  key.shadow.bias = -0.0004; key.shadow.normalBias = 0.6;
+  key.shadow.bias = -0.0003; key.shadow.normalBias = 0.5; key.shadow.radius = 4;
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0xdfe8ff, 1.1); rim.position.set(-180, 160, -220); scene.add(rim);
-  const fill = new THREE.DirectionalLight(0xffffff, 0.5); fill.position.set(-200, 80, 150); scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xdfe8ff, 1.2); rim.position.set(-180, 160, -220); scene.add(rim);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.45); fill.position.set(-200, 80, 150); scene.add(fill);
 
-  const floor = new THREE.Mesh(new THREE.CircleGeometry(42, 64), new THREE.ShadowMaterial({ opacity: 0.22 }));
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(42, 64), new THREE.ShadowMaterial({ opacity: 0.25 }));
   floor.rotation.x = -Math.PI / 2; floor.position.y = -2.6; floor.receiveShadow = true; scene.add(floor);
-  const disc = new THREE.Mesh(new THREE.CylinderGeometry(42, 44, 2.4, 64), new THREE.MeshStandardMaterial({ color: 0xd9dde2, roughness: 0.9 }));
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(42, 44, 2.4, 96), new THREE.MeshStandardMaterial({ color: 0xd9dde2, roughness: 0.85 }));
   disc.position.y = -3.9; disc.receiveShadow = true; scene.add(disc);
 
-  // Mannequin
-  const skin = new THREE.MeshStandardMaterial({ color: 0xf1f2f4, roughness: 0.42, metalness: 0.02 });
+  // Mannequin (blanc satiné)
+  const skin = new THREE.MeshPhysicalMaterial({ color: 0xeef0f2, roughness: 0.38, metalness: 0, clearcoat: 0.35, clearcoatRoughness: 0.35 });
   const body = new THREE.Group(); scene.add(body);
   const add = (g, mat, parent = body) => { const m = new THREE.Mesh(g, mat); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m; };
   add(loft(torsoRings(), 0, true), skin);
-  const head = add(ellipsoid(8, 11.3, 9.6), skin); head.position.set(0, H - 12, 0.4);
+  const head = add(ellipsoid(7.8, 11.2, 9.4, 48), skin); head.position.set(0, H - 11.6, 0.2);
+  const jaw = add(ellipsoid(5.8, 6.2, 7.4, 32), skin); jaw.position.set(0, H - 16.4, 1.4);
+  const handAt = (s) => { const f = armFrame(s); return [f.o[0] + f.d[0] * HAND_S, H - (f.o[1] + f.d[1] * HAND_S), armZ(HAND_S) + 0.3]; };
+  function handMesh(s, mat, grow = 0, parent = body) {
+    // main : paume (repère local : y vers le poignet, z vers le pouce)
+    const g = new THREE.Group(); g.position.set(...handAt(s)); g.rotation.z = s * ARM_ANG; g.rotation.y = -s * 0.12; parent.add(g);
+    const palm = new THREE.Mesh(ellipsoid(2.1 + grow, 8.6 + grow, 4.0 + grow, 32), mat); palm.castShadow = true; g.add(palm);
+    const thumb = new THREE.Mesh(ellipsoid(1.25 + grow, 3.6 + grow, 1.35 + grow, 16), mat); thumb.castShadow = true;
+    thumb.position.set(-s * 0.4, 1.6, 3.7); thumb.rotation.x = 0.45; g.add(thumb);
+    return { g, palm, thumb };
+  }
   for (const s of [-1, 1]) {
     add(loft(legRings(s), 0, true), skin);
     add(loft(armRings(s), 0, true), skin);
     const f = armFrame(s);
-    const sh = add(ellipsoid(4.8, 4.6, 5.0), skin); sh.position.set(f.o[0], H - f.o[1], 0);
-    const hand = add(ellipsoid(2.2, 8.4, 3.9), skin);
-    const hs = UPPER + FORE + 8.2;
-    hand.position.set(f.o[0] + f.d[0] * hs, H - (f.o[1] + f.d[1] * hs), 0.6); hand.rotation.z = s * ARM_ANG;
-    const foot = add(ellipsoid(4.0, 3.4, 12.2), skin); foot.position.set(s * 5.4, H - 177.6, 5.2); foot.rotation.y = s * 0.12;
+    const sh = add(ellipsoid(4.8, 4.6, 5.0), skin); sh.position.set(f.o[0], H - f.o[1], 0.3);
+    handMesh(s, skin);
+    const foot = add(ellipsoid(3.9, 3.3, 11.4), skin); foot.position.set(s * 5.4, H - 177.6, 4.4); foot.rotation.y = s * 0.12;
   }
-  // Lignes de jointure discrètes
+  // Ligne de jointure discrète à la taille
   const jm = new THREE.MeshBasicMaterial({ color: 0xc9ced4 });
-  const waist = new THREE.Mesh(new THREE.TorusGeometry(1, 0.035, 6, 64), jm); waist.scale.set(14.6, 10.7, 1); waist.rotation.x = Math.PI / 2; waist.position.y = H - 69; body.add(waist);
+  const waist = new THREE.Mesh(new THREE.TorusGeometry(1, 0.03, 6, 96), jm); waist.scale.set(14.7, 10.5, 1); waist.rotation.x = Math.PI / 2; waist.position.set(0, H - 69, 0.2); body.add(waist);
 
   const dress = new THREE.Group(); scene.add(dress);
   const disposeGroup = (g) => { for (const o of [...g.children]) { g.remove(o); o.traverse((m) => { if (m.isMesh) { m.geometry.dispose(); m.material.dispose(); } }); } };
@@ -316,20 +419,20 @@ export function createView(container, { isDark = () => false } = {}) {
   new ResizeObserver(resize).observe(container);
   function theme() {
     disc.material.color.set(isDark() ? 0x2b3138 : 0xd9dde2);
-    floor.material.opacity = isDark() ? 0.35 : 0.22;
+    floor.material.opacity = isDark() ? 0.38 : 0.25;
   }
 
   // ---------- Habillage
   let seq = 0;
   async function update(outfit) {
     const my = ++seq;
-    // outfit : { slot: { it, im, p } } (p = placement 2D en cm, déjà ajusté), + hidden
+    // outfit : { slot: { it, im, p } } (p = placement 2D en cm, déjà ajusté)
     const backs = {};
     await Promise.all(Object.entries(outfit).map(async ([s, o]) => { if (o && o.it.imgBack) backs[s] = await loadImage(o.it.imgBack); }));
     if (my !== seq) return;
     disposeGroup(dress);
     theme();
-    const put = (g, mat) => { const m = new THREE.Mesh(g, mat); m.castShadow = true; m.receiveShadow = true; dress.add(m); return m; };
+    const put = (g, mat, parent = dress) => { const m = new THREE.Mesh(g, mat); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m; };
     const proj = (o, slot, extra = {}) => {
       const a = analyse(o.im);
       const p = o.p;
@@ -344,59 +447,75 @@ export function createView(container, { isDark = () => false } = {}) {
       }
       return opts;
     };
-    // Bras du mannequin : masqués sous des manches longues
-    const sleeveCut = (o, cuffsKey = 'cuffs') => {
+    const sleeveCut = (o) => {
       // hauteur (y 2D) où s'arrête la manche
       const p = o.p, it = o.it;
       if (it.cat === 'gilet' || it.sleeves === 'none') return null;
       if (it.sleeveEnds) return Math.max(...it.sleeveEnds.map((e) => p.y + e[1] * p.h)) + 1.5;
-      if (it[cuffsKey]) return Math.min(wristY + 1, Math.max(...it[cuffsKey].map((e) => p.y + e[1] * p.h)));
+      if (it.cuffs) return Math.min(wristY + 1, Math.max(...it.cuffs.map((e) => p.y + e[1] * p.h)));
       if (it.sleeves === 'short') return 50;
       return wristY;
     };
-    const LAYERS = [['sous', 0.3, 0.25], ['haut', 1.0, 0.6], ['couche', 1.9, 1.25]];
-    for (const [slot, offT, offA] of LAYERS) {
+    // [couche, décalage torse, décalage bras, amplitude des plis]
+    const LAYERS = [['sous', 0.3, 0.25, 0.1], ['haut', 0.85, 0.55, 0.3], ['couche', 1.8, 1.2, 0.6]];
+    for (const [slot, offT, offA, amp] of LAYERS) {
       const o = outfit[slot]; if (!o) continue;
-      const mat = () => garmentMaterial(proj(o, slot, { keepShoulders: o.it.sleeves !== 'none' }));
-      put(loft(torsoRings(14, 97), offT, false), mat());
+      const loose = o.it.cat === 'veste' || o.it.cat === 'veste_pluie' ? 1.4 : 1;
+      put(loft(torsoRings(14, 97), offT, false, torsoFolds(amp * loose)), garmentMaterial(proj(o, slot, { keepShoulders: o.it.sleeves !== 'none', sheen: o.it.cat === 'veste_pluie' ? 0.15 : 0.55, roughness: o.it.cat === 'veste_pluie' ? 0.5 : 0.8 })));
       const cut = sleeveCut(o);
       if (cut != null) {
+        const cs = sAtY(cut);
         for (const s of [-1, 1]) {
-          const m = garmentMaterial(proj(o, slot, { mode: 2, cutBottom: cut }));
-          put(loft(armRings(s, -4, sAtY(cut) + 2), offA, false), m);
+          // manche de la photo : de l'épaule du mannequin 2D (±21, 31) à l'extrémité (poignet ou ouverture de manche courte)
+          const p = o.p, ends = o.it.cuffs || o.it.sleeveEnds;
+          const e = ends ? ends[s < 0 ? 0 : 1] : null;
+          const b = e ? [p.x + e[0] * p.w, p.y + e[1] * p.h] : [s * 35, cut];
+          const a2 = [s * 21, 31], f = armFrame(s);
+          const limg = Math.hypot(b[0] - a2[0], b[1] - a2[1]);
+          const arm = { o: f.o, d: f.d, u: f.u, a: a2, b, k: [limg / Math.max(8, cs), 1.15] };
+          const am = proj(o, slot, { mode: 2, axis: 2, arm, cutBottom: cut });
+          put(loft(armRings(s, -4, cs + 2), offA, false, sleeveFolds(amp * 1.3 * loose, cs)), garmentMaterial(am));
+          // épaule : recouvre la rotule du mannequin
+          // (géométrie déplacée, pas le maillage : le shader lit des coordonnées du monde)
+          const cg = ellipsoid(4.8 + offA * 0.6, 4.6 + offA * 0.6, 5.0 + offA * 0.6); cg.translate(f.o[0], H - f.o[1], 0.3);
+          put(cg, garmentMaterial(am));
         }
       }
     }
     if (outfit.bas) {
       const o = outfit.bas;
-      put(loft(torsoRings(28, 97), 0.6, false), garmentMaterial(proj(o, 'bas')));
+      put(loft(torsoRings(28, 97), 0.6, false), garmentMaterial(proj(o, 'bas', { sheen: 0.12, roughness: 0.7 })));
       // Jambes : pas de découpe alpha (les côtés de la jambe sortent de la photo de face), on coupe à l'ourlet.
       const a = analyse(o.im), hem = o.p.y + (a.box[1] + a.box[3]) * o.p.h;
-      for (const s of [-1, 1]) put(loft(legRings(s, 84, Math.min(175, hem)), 0.4, false), garmentMaterial(proj(o, 'bas', { mode: 2 })));
+      for (const s of [-1, 1]) put(loft(legRings(s, 84, Math.min(175, hem)), 0.4, false, legFolds(o.it.kind === 'collant' ? 0.18 : 0.06)), garmentMaterial(proj(o, 'bas', { mode: 2, sheen: 0.12, roughness: 0.7 })));
     }
+    // Pièces projetées de côté (photo de profil) sur le bas de jambe
+    const sideLeg = (o, top, bottom, crop, off, folds = null) => {
+      for (const s of [-1, 1]) {
+        put(loft(legRings(s, top, bottom), off, false, folds), garmentMaterial({ front: texture(o.im), base: analyse(o.im).base, mode: 2, axis: 1, rect: [-5.2, H - top, 10.6, bottom - top], crop, roughness: 0.9 }));
+      }
+    };
     if (outfit.jambieres) {
-      const o = outfit.jambieres, a = analyse(o.im);
+      const o = outfit.jambieres, a = analyse(o.im), b = a.box;
       const olga = /olga/i.test(o.it.model);
-      for (const s of [-1, 1]) put(loft(legRings(s, olga ? 112 : 106, olga ? 152 : 172), 0.22, false), garmentMaterial({ base: a.base, mode: 0, roughness: 0.85 }));
+      // la photo montre la paire côte à côte : on prend la jambière de gauche
+      sideLeg(o, olga ? 112 : 106, olga ? 152 : 172, [b[0], b[1], b[2] * 0.48, b[3]], 0.22, legFolds(0.25));
     }
     if (outfit.chaussettes) {
-      const a = analyse(outfit.chaussettes.im);
-      const top = /primaloft|winter/i.test(outfit.chaussettes.it.model) ? 146 : 150;
-      for (const s of [-1, 1]) {
-        put(loft(legRings(s, top + 3, 175), 0.16, false), garmentMaterial({ base: a.base, mode: 0, roughness: 0.9 }));
-        put(loft(legRings(s, top, top + 3.2), 0.2, false), garmentMaterial({ base: a.accent, mode: 0, roughness: 0.9 }));
-      }
+      const o = outfit.chaussettes;
+      const top = /primaloft|winter|merino/i.test(o.it.model) ? 146 : 150;
+      // chaussette de devant, profil : tige seule (sans le pied)
+      sideLeg(o, top, 175, [0, 0, 0.56, 0.62], 0.16);
     }
     if (outfit.gants) {
-      const a = analyse(outfit.gants.im);
-      const mitt = /mitt/i.test(outfit.gants.it.model);
-      const mat = garmentMaterial({ base: a.base, mode: 0, roughness: 0.7 });
+      const o = outfit.gants, a = analyse(o.im), b = a.box;
+      const mitt = /mitt/i.test(o.it.model);
       for (const s of [-1, 1]) {
-        const f = armFrame(s), hs = UPPER + FORE + 8.2;
-        const hand = put(ellipsoid(2.6, 8.8, 4.3), mat);
-        hand.position.set(f.o[0] + f.d[0] * hs, H - (f.o[1] + f.d[1] * hs), 0.6); hand.rotation.z = s * ARM_ANG;
-        if (mitt) { hand.scale.y = 0.62; hand.position.y += 3.2; }
-        put(loft(armRings(s, UPPER + FORE - (mitt ? 1 : 5), UPPER + FORE + 1.5), mitt ? 0.35 : 2.0, false), garmentMaterial({ base: a.accent, mode: 0, roughness: 0.7 }));
+        // gant : photo du dos de la main projetée de côté ; doigts vers le bas
+        const mat = garmentMaterial({ front: texture(o.im), base: a.base, mode: mitt ? 1 : 2, axis: 1, rect: [-4.4, -9.2 + (mitt ? 0 : 0), 8.8, mitt ? -16 : -21], crop: b, flip: s > 0, roughness: 0.75, sheen: 0.4 });
+        const hd = handMesh(s, mat, 0.35, dress);
+        hd.palm.scale.y = 1; if (mitt) hd.thumb.material = mat;
+        put(loft(armRings(s, UPPER + FORE - (mitt ? 1 : 5), UPPER + FORE + 1.5), mitt ? 0.35 : 1.9, false), garmentMaterial({ base: a.base, mode: 0, roughness: 0.75 }));
       }
     }
     if (outfit.casque) helmet(outfit.casque, put);
@@ -406,45 +525,36 @@ export function createView(container, { isDark = () => false } = {}) {
   function helmet(o, put) {
     const a = analyse(o.im);
     const prevail = /prevail|propero|search/i.test(o.it.model);
-    // Coque : demi-ellipsoïde allongé ; aérations dessinées dans le matériau (géométrie unitaire, puis mise à l'échelle)
-    const g = new THREE.SphereGeometry(1, 64, 40, 0, Math.PI * 2, 0, Math.PI * 0.56);
-    const shell = put(g, garmentMaterial({ base: a.base, mode: 0, roughness: 0.35, vents: prevail ? 7 : 3, ventGap: prevail ? 0.24 : 0.34 }));
+    // Coque : demi-ellipsoïde allongé, photo (vue de 3/4) projetée de côté, aérations dans le matériau
+    const g = new THREE.SphereGeometry(1, 72, 44, 0, Math.PI * 2, 0, Math.PI * 0.56);
+    // la photo montre l'avant du casque à gauche : z = +1 (avant) -> u = 0
+    const b = a.box, crop = [b[0], b[1], b[2], b[3] * 0.62];
+    const shell = put(g, garmentMaterial({ front: texture(o.im), base: a.base, mode: 2, axis: 1, rect: [-1.05, 1.0, 2.1, 1.05], flip: true, crop,
+      roughness: 0.3, sheen: 0, clearcoat: 0.6, vents: prevail ? 7 : 3, ventGap: prevail ? 0.24 : 0.34 }));
     shell.scale.set(10.6, 10.2, 14.2);
-    shell.position.set(0, H - 9.5, -1.2); shell.rotation.x = -0.16;
+    shell.position.set(0, H - 9.3, -1.2); shell.rotation.x = -0.16;
     // Sangles
     const strap = new THREE.MeshStandardMaterial({ color: 0x1b1d20, roughness: 0.8 });
     for (const s of [-1, 1]) {
-      const t = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 14, 6), strap);
-      t.position.set(s * 7.6, H - 15.5, 1.5); t.rotation.z = s * 0.12; t.rotation.x = 0.15; dress.add(t);
+      const t = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 14, 6), strap);
+      t.position.set(s * 7.7, H - 15.5, 1.6); t.rotation.z = s * 0.1; t.rotation.x = 0.18; dress.add(t);
     }
-    const chin = new THREE.Mesh(new THREE.TorusGeometry(5.2, 0.35, 6, 24, Math.PI), strap);
-    chin.position.set(0, H - 22, 2.3); chin.rotation.z = Math.PI; dress.add(chin);
-    // Accent (bandeau inférieur)
-    const band = put(new THREE.TorusGeometry(1, 0.06, 8, 64), garmentMaterial({ base: a.accent, mode: 0, roughness: 0.4 }));
-    band.scale.set(10.5, 14, 10); band.rotation.x = Math.PI / 2; band.position.set(0, H - 9.9, -1.2);
+    const chin = new THREE.Mesh(new THREE.TorusGeometry(5.4, 0.3, 6, 24, Math.PI), strap);
+    chin.position.set(0, H - 22.2, 2.8); chin.rotation.z = Math.PI; dress.add(chin);
+    const band = put(new THREE.TorusGeometry(1, 0.05, 8, 96), garmentMaterial({ base: a.accent, mode: 0, roughness: 0.4, sheen: 0 }));
+    band.scale.set(10.5, 14, 10); band.rotation.x = Math.PI / 2; band.position.set(0, H - 9.7, -1.2);
   }
 
   function shoes(o, put) {
-    const a = analyse(o.im);
+    const a = analyse(o.im), b = a.box;
     const nw = /northwave/i.test(o.it.brand || '') || /extreme/i.test(o.it.model);
-    const upper = garmentMaterial({ base: a.base, mode: 0, roughness: nw ? 0.55 : 0.3 });
-    const soleMat = new THREE.MeshStandardMaterial({ color: nw ? 0x1a1b1d : 0x2b2b2e, roughness: 0.5 });
-    const dial = new THREE.MeshStandardMaterial({ color: nw ? 0x222428 : 0xc9ccd1, roughness: 0.25, metalness: nw ? 0.2 : 0.85 });
+    // photo de profil, pointe à droite : z avant -> u = 1 ; pour une paire, on garde la chaussure de devant
+    const crop = o.it.single ? b : [b[0], b[1] + b[3] * 0.08, b[2], b[3] * 0.92];
+    const top = nw ? 16.4 : 7.6;
+    const upper = garmentMaterial({ front: texture(o.im), base: a.base, mode: 2, axis: 1, rect: [-7.8, top, 28.0, top + 1.0], crop, roughness: nw ? 0.55 : 0.32, sheen: nw ? 0.3 : 0, clearcoat: nw ? 0 : 0.4 });
     for (const s of [-1, 1]) {
-      const foot = new THREE.Group(); foot.position.set(s * 5.4, 0, 5.2); foot.rotation.y = s * 0.12; dress.add(foot);
-      const sh = new THREE.Mesh(ellipsoid(4.5, nw ? 5.2 : 4.3, 13.4), upper); sh.castShadow = true;
-      sh.position.set(0, H - 176.8, 0.2); foot.add(sh);
-      if (nw) {
-        const collar = put(loft(legRings(s, 165, 174), 0.55, false), upper);
-        collar.castShadow = true;
-      }
-      const sole = new THREE.Mesh(ellipsoid(4.4, 0.9, 13.6), soleMat);
-      sole.position.set(0, H - 180.6, 0.2); sole.castShadow = true; foot.add(sole);
-      // molette BOA sur le dessus du pied
-      for (const [dz, dy] of nw ? [[-1, -172.6], [4.5, -174.3]] : [[0.5, -173.2]]) {
-        const d = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 1.2, 24), dial);
-        d.position.set(s * 2.6, H + dy, dz); d.rotation.z = s * 0.9; foot.add(d);
-      }
+      const foot = new THREE.Group(); foot.position.set(s * 5.4, H - 181.3, 0.4); foot.rotation.y = s * 0.12; dress.add(foot);
+      put(shoeGeometry(nw), upper, foot);
     }
   }
 
@@ -457,6 +567,15 @@ export function createView(container, { isDark = () => false } = {}) {
       const d = camera.position.distanceTo(controls.target);
       const ang = { face: 0, dos: Math.PI, profil: Math.PI / 2, '3/4': Math.PI / 5 }[name] ?? 0;
       camera.position.set(Math.sin(ang) * d, controls.target.y + 12, Math.cos(ang) * d);
+      controls.update();
+    },
+    // caméra libre (comparaison avec une photo) : angle en degrés, hauteur de visée, distance
+    camera(deg, ty = 89, dist = 440, fov = 26) {
+      controls.maxDistance = Math.max(700, dist * 1.2);
+      camera.fov = fov; camera.updateProjectionMatrix();
+      controls.target.set(0, ty, 0);
+      const r = deg * Math.PI / 180;
+      camera.position.set(Math.sin(r) * dist, ty + 6, Math.cos(r) * dist);
       controls.update();
     },
     snapshot() { renderer.render(scene, camera); return renderer.domElement.toDataURL('image/png'); },
